@@ -26,10 +26,12 @@ readBatscopeXLSX <- function(path,
     # discard sequences with low quality
     dim_qual_before <- dim(rohdaten)
     quality_colnr <- which(colnames(daten) == quality_name)
-    daten <- subset(daten,daten[,quality_colnr]>quality_threshold)
+    daten <- subset(daten,daten[,quality_colnr]>=quality_threshold)
     dim_qual_after <- dim(daten)
     dim_qual_diff <- dim_qual_before[1]-dim_qual_after[1]
 
+    cat("Summary of " quality_name,"\n",sep="")
+    print(summary(rohdaten[,quality_colnr]))
     cat("Discarded ",dim_qual_diff," of ",
         dim_qual_before[1]," sequences (",
         (dim_qual_diff/dim_qual_before[1])*100,"%); ",dim_qual_after[1],

@@ -17,7 +17,7 @@ readBatscopeXLSX <- function(path,
         startRow = 1, colNames = TRUE, 
         skipEmptyRows = TRUE, rowNames = FALSE, 
         detectDates = FALSE, rows = NULL, cols = NULL)
-    dateOrigin <- getDateOrigin(file_name)
+    dateOrigin <- openxlsx::getDateOrigin(file_name)
     #str(rohdaten)
 
     # MODIFY DATA for use in R

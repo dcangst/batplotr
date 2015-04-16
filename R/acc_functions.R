@@ -19,8 +19,8 @@ timeOfNight <- function(df){
 #'
 #' @param list a list of \code{data.frame}s
 #' @param n number of rows to print
-#' @family 
-#' @export
+#' @family accessory functions
+#' @export 
 listHead <- function(list,n="5"){
     for(i in 1:length(list)){
         print(head(list[[i]],n))

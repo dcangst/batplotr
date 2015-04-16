@@ -36,22 +36,22 @@ readBatscopeXLSX <- function(path,
         " remaining\n",sep="")
 
     # convert data/time format from excel to R
-    daten$ImportDate <- openxlsx::convertToDateTime(rohdaten$ImportDate, 
+    daten$ImportDate <- openxlsx::convertToDateTime(daten$ImportDate, 
         origin = dateOrigin)
     #fix subtle difference in POSIXct representation that messes with 
     #some functions
     daten$ImportDate <- as.POSIXct(as.character(daten$ImportDate)) 
     
-    daten$SurveyDate <- openxlsx::convertToDateTime(rohdaten$SurveyDate, 
+    daten$SurveyDate <- openxlsx::convertToDateTime(daten$SurveyDate, 
         origin = dateOrigin)
     #fix, see above
     daten$SurveyDate <- as.POSIXct(as.character(daten$SurveyDate)) 
     
-    daten$recDate <- openxlsx::convertToDateTime(rohdaten$recDate, origin = dateOrigin)
+    daten$recDate <- openxlsx::convertToDateTime(daten$recDate, origin = dateOrigin)
     #fix, see above
     daten$recDate <- as.POSIXct(as.character(daten$recDate)) 
 
-    daten$recTime <- openxlsx::convertToDateTime(rohdaten$recTime+rohdaten$recDate, 
+    daten$recTime <- openxlsx::convertToDateTime(daten$recTime+daten$recDate, 
         origin = dateOrigin)
     #fix, see above
     daten$recTime <- as.POSIXct(as.character(daten$recTime)) 

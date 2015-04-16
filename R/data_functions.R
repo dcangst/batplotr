@@ -62,8 +62,8 @@ readBatscopeXLSX <- function(path,
     daten$recDate <- as.POSIXct(as.character(daten$recDate)) 
 
     species_col_nr <- which(colnames(daten) == species_col_name)
-    names(daten)[species_col_nr] <- "species"
-    
+    daten$species <- daten[,species_col_nr]
+
     return(daten)
 }
 

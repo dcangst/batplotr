@@ -47,17 +47,14 @@ readBatscopeXLSX <- function(path,
     #fix, see above
     daten$SurveyDate <- as.POSIXct(as.character(daten$SurveyDate)) 
     
-    daten$recDate <- openxlsx::convertToDateTime(daten$recDate, origin = dateOrigin)
-    #fix, see above
-    daten$recDate <- as.POSIXct(as.character(daten$recDate)) 
-
     daten$recTime <- openxlsx::convertToDateTime(daten$recTime+daten$recDate, 
         origin = dateOrigin)
     #fix, see above
     daten$recTime <- as.POSIXct(as.character(daten$recTime)) 
 
-    # convert chr to factor for easier handling in R
-    daten$species <- factor(daten$species)
+    daten$recDate <- openxlsx::convertToDateTime(daten$recDate, origin = dateOrigin)
+    #fix, see above
+    daten$recDate <- as.POSIXct(as.character(daten$recDate)) 
 
     return(daten)
 }

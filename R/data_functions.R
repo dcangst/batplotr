@@ -30,7 +30,7 @@ readBatscopeXLSX <- function(path,
     dim_qual_after <- dim(daten)
     dim_qual_diff <- dim_qual_before[1]-dim_qual_after[1]
 
-    cat("Summary of " quality_name,"\n",sep="")
+    cat("Summary of ",quality_name,"\n",sep="")
     print(summary(rohdaten[,quality_colnr]))
     cat("Discarded ",dim_qual_diff," of ",
         dim_qual_before[1]," sequences (",

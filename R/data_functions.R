@@ -16,11 +16,11 @@ readBatscopeXLSX <- function(path,
     quality_col_name="AutoClass1Qual",
     quality_threshold=0.8){
 
-    rohdaten <- openxlsx::read.xlsx(file_name, sheet = 1, 
+    rohdaten <- openxlsx::read.xlsx(path, sheet = 1, 
         startRow = 1, colNames = TRUE, 
         skipEmptyRows = TRUE, rowNames = FALSE, 
         detectDates = FALSE, rows = NULL, cols = NULL)
-    dateOrigin <- openxlsx::getDateOrigin(file_name)
+    dateOrigin <- openxlsx::getDateOrigin(path)
     #str(rohdaten)
 
     # MODIFY DATA for use in R
@@ -63,7 +63,7 @@ readBatscopeXLSX <- function(path,
 
     species_col_nr <- which(colnames(daten) == species_col_name)
     names(daten)[species_col_nr] <- "species"
-
+    
     return(daten)
 }
 

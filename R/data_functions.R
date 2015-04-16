@@ -25,7 +25,7 @@ readBatscopeXLSX <- function(path,
 
     # discard sequences with low quality
     dim_qual_before <- dim(rohdaten)
-    quality_colnr <- which(colnames(data) == od_name)
+    quality_colnr <- which(colnames(daten) == quality_name)
     daten <- subset(daten,daten[,quality_colnr]>quality_threshold)
     dim_qual_after <- dim(daten)
     dim_qual_diff <- dim_qual_before[1]-dim_qual_after[1]

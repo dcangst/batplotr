@@ -9,69 +9,74 @@
 #'  relevant quality scores
 #' @param quality_threshold sequences with species assignment quality below this
 #'  threshold will be discarded.
-#' @family data functions
+#' @family data_r functions
 #' @export
-readBatscopeXLSX <- function(path,
-    species_col_name="AutoClass1",
+readBatscopeXLSX <- function(path, 
+    species_col_name="AutoClass1", 
     quality_col_name="AutoClass1Qual",
     quality_threshold=0.8){
 
-    rohdaten <- openxlsx::read.xlsx(path, sheet = 1, 
+    rawdata <- openxlsx::read.xlsx(path, sheet = 1, 
         startRow = 1, colNames = TRUE, 
         skipEmptyRows = TRUE, rowNames = FALSE, 
         detectDates = FALSE, rows = NULL, cols = NULL)
     dateOrigin <- openxlsx::getDateOrigin(path)
-    #str(rohdaten)
+    #str(rawdata)
 
     # MODIFY DATA for use in R
-    daten <- rohdaten
+    data_r <- rawdata
 
     # discard sequences with low quality
-    dim_qual_before <- dim(rohdaten)
-    quality_col_nr <- which(colnames(daten) == quality_col_name)
-    daten <- subset(daten,daten[,quality_col_nr]>=quality_threshold)
-    dim_qual_after <- dim(daten)
+    dim_qual_before <- dim(rawdata)
+    quality_col_nr <- which(colnames(data_r) == quality_col_name)
+    data_r <- subset(data_r,data_r[,quality_col_nr]>=quality_threshold)
+    dim_qual_after <- dim(data_r)
     dim_qual_diff <- dim_qual_before[1]-dim_qual_after[1]
 
     cat("Summary of ",quality_col_name,"\n\n",sep="")
-    print(summary(rohdaten[,quality_col_nr]))
+    print(summary(rawdata[,quality_col_nr]))
     cat("\nDiscarded ",dim_qual_diff," of ",
         dim_qual_before[1]," sequences (",
         (dim_qual_diff/dim_qual_before[1])*100,"%); ",dim_qual_after[1],
         " remaining\n",sep="")
 
-    # convert data/time format from excel to R
-    daten$ImportDate <- openxlsx::convertToDateTime(daten$ImportDate, 
+    # convert data_r/time format from excel to R
+    data_r$ImportDate <- openxlsx::convertToDateTime(data_r$ImportDate, 
         origin = dateOrigin)
     #fix subtle difference in POSIXct representation that messes with 
     #some functions
-    daten$ImportDate <- as.POSIXct(as.character(daten$ImportDate)) 
+    data_r$ImportDate <- as.POSIXct(as.character(data_r$ImportDate)) 
     
-    daten$SurveyDate <- openxlsx::convertToDateTime(daten$SurveyDate, 
+    data_r$SurveyDate <- openxlsx::convertToDateTime(data_r$SurveyDate, 
         origin = dateOrigin)
     #fix, see above
-    daten$SurveyDate <- as.POSIXct(as.character(daten$SurveyDate)) 
+    data_r$SurveyDate <- as.POSIXct(as.character(data_r$SurveyDate)) 
     
-    daten$recTime <- openxlsx::convertToDateTime(daten$recTime+daten$recDate, 
+    data_r$recTime <- openxlsx::convertToDateTime(data_r$recTime+data_r$recDate, 
         origin = dateOrigin)
     #fix, see above
-    daten$recTime <- as.POSIXct(as.character(daten$recTime)) 
+    data_r$recTime <- as.POSIXct(as.character(data_r$recTime)) 
 
-    daten$recDate <- openxlsx::convertToDateTime(daten$recDate, origin = dateOrigin)
+    data_r$recDate <- openxlsx::convertToDateTime(data_r$recDate, origin = dateOrigin)
     #fix, see above
-    daten$recDate <- as.POSIXct(as.character(daten$recDate)) 
+    data_r$recDate <- as.POSIXct(as.character(data_r$recDate)) 
 
-    species_col_nr <- which(colnames(daten) == species_col_name)
-    names(daten)[species_col_nr] <- "species"
+    print(species_col_name)
+    species_col_nr <- which(names(data_r) == species_col_name)
+    print(names(data_r))
+    print(species_col_nr)
+    print(data_r[,species_col_nr])
+    data_r$species <- data_r[,species_col_nr]
+    print(data_r$species)
 
-    return(daten)
+    return(data_r)
 }
 
-#' Summarize Batscope data
+#' Summarize Batscope data_r
 #' 
 #' summarizes the Batscope Data by nights and bins
 #'
-#' @param daten data.frame generated with \link{\code(readBatscopeXLSX)}
+#' @param data_r data_r.frame generated with \link{\code(readBatscopeXLSX)}
 #' @param bin_width length of bins in min
 #' @param nacht_start integer, clocktime (hour) when the night starts 
 #'  (for binning)
@@ -80,22 +85,22 @@ readBatscopeXLSX <- function(path,
 #' @param 
 #' @family 
 #' @export
-sumBatscopeData <- function(daten,
+sumBatscopeData <- function(data_r,
     bin_width=5,
     nacht_start=13,
     nacht_ende=12){
         # binning der Daten (in bin_length min Intervalle)
     n_cuts <-(24+nacht_ende-nacht_start)*(60/bin_length)+1
     cuts_list <- list()
-    for(i in 1:length(unique(daten$SurveyDate))){
-        cuts_list[[i]] <- seq(unique(daten$SurveyDate)[i]+nacht_start*60*60,
+    for(i in 1:length(unique(data_r$SurveyDate))){
+        cuts_list[[i]] <- seq(unique(data_r$SurveyDate)[i]+nacht_start*60*60,
             by=paste0(bin_length," min"),length=n_cuts)
     }
     cuts <- as.POSIXct(unlist(cuts_list),origin="1970-01-01 00:00")
-    daten$bins_factor <- cut(daten$recTime,cuts,include.lowest=TRUE,right=FALSE)
+    data_r$bins_factor <- cut(data_r$recTime,cuts,include.lowest=TRUE,right=FALSE)
 
     # Zahlen der Events pro Tag, Mikrophon, species und bins
-    daten_binned_bySpecies <- plyr::ddply(daten,
+    data_binned_bySpecies <- plyr::ddply(data_r,
         .(SurveyDate,ProjectName,species,bins_factor),
         summarize,
         n_events=length(numCallsEstimated),
@@ -104,26 +109,26 @@ sumBatscopeData <- function(daten,
         .progress="text")
 
     # Zahlen der Events pro Tag, Mikrophon, und bins (alle species)
-    daten_binned_allSpecies <- plyr::ddply(daten,
+    data_binned_allSpecies <- plyr::ddply(data_r,
         .(SurveyDate,ProjectName,bins_factor),
         summarize,
         n_events=length(numCallsEstimated),
         sum_nCalls=sum(numCallsEstimated),
         meanT_BL=mean(temperature),
         .progress="text")
-    daten_binned_allSpecies$species <- factor("all")
+    data_binned_allSpecies$species <- factor("all")
 
-    daten_binned <- rbind(daten_binned_bySpecies,daten_binned_allSpecies)
+    data_binned <- rbind(data_binned_bySpecies,data_binned_allSpecies)
 
-    daten_binned$bins <- as.POSIXct(daten_binned$bins_factor)
-    daten_binned$night <- as.Date(daten_binned$SurveyDate)+1
+    data_binned$bins <- as.POSIXct(data_binned$bins_factor)
+    data_binned$night <- as.Date(data_binned$SurveyDate)+1
 
     # Uhrzeit der Beobachtung (ohne Datum, bzw. dasselbe Datum fuer alle)
-    daten_binned <- plyr::ddply(daten_binned,.(night),timeOfNight,.progress="text")
+    data_binned <- plyr::ddply(data_binned,.(night),timeOfNight,.progress="text")
 
     # ausrechnen des Sonnenauf- und untergangs
     nights_all <- as.POSIXct(
-        format(daten_binned$night,format="%F"))
+        format(data_binned$night,format="%F"))
     yr_start <- format(min(nights_all),format="%Y")
     yr_end   <- format(max(nights_all),format="%Y")
     n_days <- as.numeric(
@@ -132,30 +137,30 @@ sumBatscopeData <- function(daten,
 
     SR_SS <- sunrise.set(station_lat, station_long, 
         paste0(yr_start,"-01-01"), timezone = "CET", num.days = n_days+10)
-    SR_night <- data.frame(night=as.Date(SR_SS$sunset),
+    SR_night <- data_r.frame(night=as.Date(SR_SS$sunset),
         sunrise.time=c(SR_SS$sunrise[2:length(SR_SS$sunrise)],NA))
     SR_night <- SR_night[complete.cases(SR_night),]
     SR_night$sunrise.ton <- as.POSIXct(paste0("1900-01-02 ",
         str_sub(as.character(SR_night$sunrise.time),-8,)))
 
-    SS_night <- data.frame(night=as.Date(SR_SS$sunset),
+    SS_night <- data_r.frame(night=as.Date(SR_SS$sunset),
         sunset.time=SR_SS$sunset)
     SS_night <- SS_night[complete.cases(SS_night),]
     SS_night$sunset.ton <- as.POSIXct(paste0("1900-01-01 ",
         str_sub(as.character(SS_night$sunset.time),-8,))) 
 
-    daten_binned2 <- merge(daten_binned,SR_night,by="night",all=TRUE)
-    daten_binned3 <- merge(daten_binned2,SS_night,by="night",all=TRUE)
-    daten_binned <- daten_binned3
+    data_binned2 <- merge(data_binned,SR_night,by="night",all=TRUE)
+    data_binned3 <- merge(data_binned2,SS_night,by="night",all=TRUE)
+    data_binned <- data_binned3
 
-    str(daten_binned)
+    str(data_binned)
 
-    daten_binned$dst <- dst(daten_binned$bins)
-    daten_binned$timeOfNight_utc <- force_tz(daten_binned$timeOfNight,
-        tzone="UTC")-3600*daten_binned$dst
+    data_binned$dst <- dst(data_binned$bins)
+    data_binned$timeOfNight_utc <- force_tz(data_binned$timeOfNight,
+        tzone="UTC")-3600*data_binned$dst
 
-    daten_binned$bins_utc <- force_tz(daten_binned$bins,
-        tzone="UTC")-3600*daten_binned$dst
+    data_binned$bins_utc <- force_tz(data_binned$bins,
+        tzone="UTC")-3600*data_binned$dst
     
     SS_night$dst <- dst(SS_night$sunset.time)
     SS_night$sunset.ton_utc <- force_tz(SS_night$sunset.ton,

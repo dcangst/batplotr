@@ -16,6 +16,6 @@ time
 }
 \seealso{
 Other accessory functions: \code{\link{convertToUTC}};
-  \code{\link{listHead}}
+  \code{\link{getBatLoggerGPS}}; \code{\link{listHead}}
 }
 

@@ -16,6 +16,6 @@ Displays the first \code{n} rows of a data.frame
 }
 \seealso{
 Other accessory functions: \code{\link{convertToUTC}};
-  \code{\link{timeOfNight}}
+  \code{\link{getBatLoggerGPS}}; \code{\link{timeOfNight}}
 }
 

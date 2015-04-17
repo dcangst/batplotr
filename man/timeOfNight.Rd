@@ -14,6 +14,7 @@ gives back a \code{POSIXct} object with date 1900-01-01 (evening) or
 1900-01-02 but with same timestamp for plotting
 }
 \seealso{
-Other accessory functions: \code{\link{listHead}}
+Other accessory functions: \code{\link{listHead}};
+  \code{\link{nights_SRSS}}
 }
 

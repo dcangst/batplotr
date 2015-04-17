@@ -15,6 +15,7 @@ listHead(list, n = "5")
 Displays the first \code{n} rows of a data.frame
 }
 \seealso{
-Other accessory functions: \code{\link{timeOfNight}}
+Other accessory functions: \code{\link{nights_SRSS}};
+  \code{\link{timeOfNight}}
 }
 

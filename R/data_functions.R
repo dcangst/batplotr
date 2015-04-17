@@ -9,7 +9,7 @@
 #'  relevant quality scores
 #' @param quality_threshold sequences with species assignment quality below this
 #'  threshold will be discarded.
-#' @family data_r functions
+#' @family data functions
 #' @export
 readBatscopeXLSX <- function(path, 
     species_col_name="AutoClass1", 
@@ -72,14 +72,13 @@ readBatscopeXLSX <- function(path,
 #' 
 #' summarizes the Batscope Data by nights and bins
 #'
-#' @param data_r data.frame generated with \link{\code(readBatscopeXLSX)}
+#' @param data_r data.frame generated with \link{\code{readBatscopeXLSX}}
 #' @param bin_width length of bins in min
 #' @param nacht_start integer, clocktime (hour) when the night starts 
 #'  (for binning)
 #' @param nacht_ende integer, clocktime (hour) when the night ends 
 #'  (for binning)
-#' @param 
-#' @family 
+#' @family data functions
 #' @export
 sumBatscopeData <- function(
     data_r,

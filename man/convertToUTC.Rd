@@ -13,7 +13,7 @@ convertToUTC(date)
 converts time to UTC (to avoid problems with daylight saving time)
 }
 \seealso{
-Other accessory functions: \code{\link{getBatLoggerGPS}};
-  \code{\link{listHead}}; \code{\link{timeOfNight}}
+Other accessory functions: \code{\link{listHead}};
+  \code{\link{timeOfNight}}
 }
 

@@ -4,7 +4,7 @@
 \alias{readBatscopeXLSX}
 \title{read Batscope export}
 \usage{
-readBatscopeXLSX(path = NULL, species_col_name = "AutoClass1",
+readBatscopeXLSX(path = file.choose(), species_col_name = "AutoClass1",
   quality_col_name = "AutoClass1Qual", quality_threshold = 0.8)
 }
 \arguments{

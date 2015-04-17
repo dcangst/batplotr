@@ -12,15 +12,12 @@
 #'  threshold will be discarded.
 #' @family data functions
 #' @export
-readBatscopeXLSX <- function(path=NULL, 
+readBatscopeXLSX <- function(path=file.choose(), 
     species_col_name="AutoClass1", 
     quality_col_name="AutoClass1Qual",
     quality_threshold=0.8){
 
-    if(is.null(path)){
-        path <- file.choose()
-    }
-    #cat(path,"\nwird eingelesen, kann eine Weile dauern...\n")
+    cat(path,"\nwird eingelesen, kann eine Weile dauern...\n")
 
     rawdata <- openxlsx::read.xlsx(path, sheet = 1, 
         startRow = 1, colNames = TRUE, 
@@ -84,7 +81,13 @@ readBatscopeXLSX <- function(path=NULL,
 #'  (for binning)
 #' @param nacht_ende integer, clocktime (hour) when the night ends 
 #'  (for binning)
-#' @param name of the progress bar to use, see 
+#' @param GPSLatitude vector of GPS latitudes for the stations
+#'  (recycled if needed). If NULL (default) the logged GPS data will be used 
+#'  (averaged for each station)
+#' @param GPSLongitude vector of GPS longitudes for the stations
+#'  (recycled if needed). If NULL (default) the logged GPS data will be used 
+#'  (averaged for each station) 
+#' @param progress name of the progress bar to use, see 
 #'  \link{\code{plyr::create_progress_bar}} 
 #' @family data functions
 #' @export
@@ -93,6 +96,8 @@ sumBatscopeData <- function(
     bin_length=5,
     nacht_start=13,
     nacht_ende=12,
+    GPSLatitude=NULL,
+    GPSLongitude=NULL,
     progress="text"
     ){
     
@@ -104,30 +109,29 @@ sumBatscopeData <- function(
             by=paste0(bin_length," min"),length=n_cuts)
     }
     cuts <- as.POSIXct(unlist(cuts_list),origin="1970-01-01 00:00")
-    data_r$bins_factor <- cut(data_r$recTime,cuts,include.lowest=TRUE,right=FALSE)
-
-    cat("Zusammenfassung nach Tag, Project, Species und Bins...\n")
+    data_r$bins_factor <- cut(data_r$recTime,cuts,include.lowest=TRUE,
+        right=FALSE)
+    
     # Zahlen der Events pro Tag, Mikrophon, species und bins
+    cat("Zusammenfassung nach Tag, Project, Species und Bins...\n")
+
     data_binned_bySpecies <- plyr::ddply(data_r,
         .(SurveyDate,ProjectName,species,bins_factor),
         summarize,
         n_events=length(numCallsEstimated),
         sum_nCalls=sum(numCallsEstimated),
         meanT_BL=mean(temperature),
-        GPSLatitude = getBatLoggerGPS(GPSLatitude,GPSValid),
-        GPSLongitude = getBatLoggerGPS(GPSLongitude,GPSValid),
         .progress=progress)
 
-    cat("Zusammenfassung Total aller species...\n")
     # Zahlen der Events pro Tag, Mikrophon, und bins (alle species)
+    cat("Zusammenfassung Total aller species...\n")
+
     data_binned_allSpecies <- plyr::ddply(data_r,
         .(SurveyDate,ProjectName,bins_factor),
         summarize,
         n_events=length(numCallsEstimated),
         sum_nCalls=sum(numCallsEstimated),
         meanT_BL=mean(temperature),
-        GPSLatitude = getBatLoggerGPS(GPSLatitude,GPSValid),
-        GPSLongitude = getBatLoggerGPS(GPSLongitude,GPSValid),
         .progress=progress)
     
     data_binned_allSpecies$species <- factor("all")
@@ -136,18 +140,39 @@ sumBatscopeData <- function(
 
     data_binned$bins <- as.POSIXct(data_binned$bins_factor)
 
+    # GPS Koordinaten
+    if(is.null(GPSLatitude) | is.null(GPSLongitude)){
+        gps_coords <- ddply(data_r,.(ProjectName),summarize,
+            lat=mean(GPSLatitude[GPSValid=="yes"],na.rm=TRUE),
+            long=mean(GPSLongitude[GPSValid=="yes"],na.rm=TRUE)
+            )
+        print(gps_coords)
+        if(any(is.na(gps_coords))){
+            stop("GPS Koordinaten nicht für alle Stationen vorhanden.")
+            stop("Bitte manuell eingeben.")
+        } else {
+            message("Koordinaten von Batlogger verwendet.")
+        }
+    } else {
+        gps_coords <- data.frame(
+            ProjectName=unique(data_r$ProjectName),
+            lat=GPSLatitude,
+            long=GPSLongitude)
+    }
+
+    data_binned <- merge(data_binned,gps_coords)
+
     # Sonnenauf und -untergang
-    #cat("Berechne Sonnenauf/untergangszeiten...\n")
-    #coords <- attr(data_r,"coordinates")
-    #
-    #data_binned  <- ddply(data_binned,.(SurveyDate),mutate,
-    #    sunset = sunriset(coords,
-    #        SurveyDate, direction="sunset", POSIXct.out=TRUE)[,2],
-    #    sunrise = sunriset(coords,
-    #        SurveyDate+24*60*60, direction="sunrise", POSIXct.out=TRUE)[,2],
-    #    coords,
-    #    .progress=progress
-    #    )
+    cat("Berechne Sonnenauf/untergangszeiten...\n")
+    
+    gps_matrix <- matrix(c(data_binned$long,data_binned$lat),ncol=2)
+    data_binned$sunset <- sunriset(
+        gps_matrix,data_binned$SurveyDate,
+         direction="sunset", POSIXct.out=TRUE)[,2]
+
+    data_binned$sunrise <- sunriset(
+        gps_matrix,data_binned$SurveyDate+24*60*60,
+         direction="sunrise", POSIXct.out=TRUE)[,2]
 
     data_binned$ProjectName <- factor(data_binned$ProjectName)
     data_binned$species <- factor(data_binned$species)

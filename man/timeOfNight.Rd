@@ -4,17 +4,18 @@
 \alias{timeOfNight}
 \title{Time of Night}
 \usage{
-timeOfNight(df)
+timeOfNight(date)
 }
 \arguments{
-\item{date}{a POSIXct object}
+\item{date}{a POSIXct object, or a vector thereof}
 }
 \description{
 gives back a \code{POSIXct} object with date 1900-01-01 (evening) or
-1900-01-02 but with same timestamp for plotting
+1900-01-02 but with same timestamp for plotting, corrects for daylight saving
+time
 }
 \seealso{
-Other accessory functions: \code{\link{listHead}};
-  \code{\link{nights_SRSS}}
+Other accessory functions: \code{\link{convertToUTC}};
+  \code{\link{listHead}}
 }
 

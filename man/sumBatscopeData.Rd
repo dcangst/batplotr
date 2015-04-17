@@ -4,7 +4,8 @@
 \alias{sumBatscopeData}
 \title{Summarize Batscope data_r}
 \usage{
-sumBatscopeData(data_r, bin_length = 5, nacht_start = 13, nacht_ende = 12)
+sumBatscopeData(data_r, bin_length = 5, nacht_start = 13, nacht_ende = 12,
+  station_long, station_lat)
 }
 \arguments{
 \item{data_r}{data.frame generated with \link{\code{readBatscopeXLSX}}}

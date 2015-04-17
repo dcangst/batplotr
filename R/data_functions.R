@@ -96,8 +96,8 @@ sumBatscopeData <- function(
     bin_length=5,
     nacht_start=13,
     nacht_ende=12,
-    GPSLatitude=NULL,
-    GPSLongitude=NULL,
+    lat=NULL,
+    long=NULL,
     progress="text"
     ){
     
@@ -141,7 +141,7 @@ sumBatscopeData <- function(
     data_binned$bins <- as.POSIXct(data_binned$bins_factor)
 
     # GPS Koordinaten
-    if(is.null(GPSLatitude) | is.null(GPSLongitude)){
+    if(is.null(lat) | is.null(long)){
         gps_coords <- ddply(data_r,.(ProjectName),summarize,
             lat=mean(GPSLatitude[GPSValid=="yes"],na.rm=TRUE),
             long=mean(GPSLongitude[GPSValid=="yes"],na.rm=TRUE)
@@ -156,8 +156,8 @@ sumBatscopeData <- function(
     } else {
         gps_coords <- data.frame(
             ProjectName=unique(data_r$ProjectName),
-            lat=GPSLatitude,
-            long=GPSLongitude)
+            lat,
+            long)
     }
 
     data_binned <- merge(data_binned,gps_coords)

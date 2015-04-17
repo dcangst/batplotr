@@ -35,7 +35,7 @@ readBatscopeXLSX <- function(path,
 
     cat("Summary of ",quality_col_name,"\n\n",sep="")
     print(summary(rawdata[,quality_col_nr]))
-    cat("\nDiscarded ",dim_qual_diff," of ",
+    cat("\n\'Discarded ",dim_qual_diff," of ",
         dim_qual_before[1]," sequences (",
         (dim_qual_diff/dim_qual_before[1])*100,"%); ",dim_qual_after[1],
         " remaining\n",sep="")
@@ -72,7 +72,7 @@ readBatscopeXLSX <- function(path,
 #' 
 #' summarizes the Batscope Data by nights and bins
 #'
-#' @param data_r data_r.frame generated with \link{\code(readBatscopeXLSX)}
+#' @param data_r data.frame generated with \link{\code(readBatscopeXLSX)}
 #' @param bin_width length of bins in min
 #' @param nacht_start integer, clocktime (hour) when the night starts 
 #'  (for binning)
@@ -81,11 +81,13 @@ readBatscopeXLSX <- function(path,
 #' @param 
 #' @family 
 #' @export
-sumBatscopeData <- function(data_r,
-    bin_width=5,
+sumBatscopeData <- function(
+    data_r,
+    bin_length=5,
     nacht_start=13,
     nacht_ende=12){
-        # binning der Daten (in bin_length min Intervalle)
+    
+    # binning der Daten (in bin_length min Intervalle)
     n_cuts <-(24+nacht_ende-nacht_start)*(60/bin_length)+1
     cuts_list <- list()
     for(i in 1:length(unique(data_r$SurveyDate))){
@@ -123,6 +125,8 @@ sumBatscopeData <- function(data_r,
     data_binned <- plyr::ddply(data_binned,.(night),timeOfNight,.progress="text")
 
     # ausrechnen des Sonnenauf- und untergangs
+    nights_SRSS(data_binned$night)
+
     nights_all <- as.POSIXct(
         format(data_binned$night,format="%F"))
     yr_start <- format(min(nights_all),format="%Y")
@@ -133,13 +137,13 @@ sumBatscopeData <- function(data_r,
 
     SR_SS <- sunrise.set(station_lat, station_long, 
         paste0(yr_start,"-01-01"), timezone = "CET", num.days = n_days+10)
-    SR_night <- data_r.frame(night=as.Date(SR_SS$sunset),
+    SR_night <- data.frame(night=as.Date(SR_SS$sunset),
         sunrise.time=c(SR_SS$sunrise[2:length(SR_SS$sunrise)],NA))
     SR_night <- SR_night[complete.cases(SR_night),]
     SR_night$sunrise.ton <- as.POSIXct(paste0("1900-01-02 ",
         str_sub(as.character(SR_night$sunrise.time),-8,)))
 
-    SS_night <- data_r.frame(night=as.Date(SR_SS$sunset),
+    SS_night <- data.frame(night=as.Date(SR_SS$sunset),
         sunset.time=SR_SS$sunset)
     SS_night <- SS_night[complete.cases(SS_night),]
     SS_night$sunset.ton <- as.POSIXct(paste0("1900-01-01 ",

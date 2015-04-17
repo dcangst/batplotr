@@ -38,3 +38,20 @@ listHead <- function(list,n="5"){
         print(head(list[[i]],n))
     }
 }
+
+#' Get BatLogger GPS coordinates
+#' 
+#' 
+#'
+#' @param GPSCoord GPS coordinates
+#' @param GPSValid is the value of GPSCoord reliable?
+#' @family accessory functions
+#' @export 
+getBatLoggerGPS <- function(GPSCoord,GPSValid){
+    if(sum(GPSValid=="yes")==0 | is.na(sum(GPSValid=="yes"))){
+        out <- NA
+    } else {
+        out <- mean(GPSCoord[GPSValid=="yes"],na.rm=TRUE)
+    }
+    return(out)
+}

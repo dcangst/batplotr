@@ -12,12 +12,15 @@
 #'  threshold will be discarded.
 #' @family data functions
 #' @export
-readBatscopeXLSX <- function(path, 
+readBatscopeXLSX <- function(path=NULL, 
     species_col_name="AutoClass1", 
     quality_col_name="AutoClass1Qual",
-    quality_threshold=0.8,
-    station_lat,
-    station_long){
+    quality_threshold=0.8){
+
+    if(is.null(path)){
+        path <- file.choose()
+    }
+    #cat(path,"\nwird eingelesen, kann eine Weile dauern...\n")
 
     rawdata <- openxlsx::read.xlsx(path, sheet = 1, 
         startRow = 1, colNames = TRUE, 
@@ -68,7 +71,6 @@ readBatscopeXLSX <- function(path,
 
     data_r$species <- data_r[,species_col_nr]
 
-    attr(data_r,"coordinates") <- matrix(c(station_long, station_lat), nrow=1)
     return(data_r)
 }
 
@@ -112,6 +114,8 @@ sumBatscopeData <- function(
         n_events=length(numCallsEstimated),
         sum_nCalls=sum(numCallsEstimated),
         meanT_BL=mean(temperature),
+        GPSLatitude = getBatLoggerGPS(GPSLatitude,GPSValid),
+        GPSLongitude = getBatLoggerGPS(GPSLongitude,GPSValid),
         .progress=progress)
 
     cat("Zusammenfassung Total aller species...\n")
@@ -122,6 +126,8 @@ sumBatscopeData <- function(
         n_events=length(numCallsEstimated),
         sum_nCalls=sum(numCallsEstimated),
         meanT_BL=mean(temperature),
+        GPSLatitude = getBatLoggerGPS(GPSLatitude,GPSValid),
+        GPSLongitude = getBatLoggerGPS(GPSLongitude,GPSValid),
         .progress=progress)
     
     data_binned_allSpecies$species <- factor("all")
@@ -131,15 +137,17 @@ sumBatscopeData <- function(
     data_binned$bins <- as.POSIXct(data_binned$bins_factor)
 
     # Sonnenauf und -untergang
-    cat("Berechne Sonnenauf/untergangszeiten...\n")
-    coords <- attr(data_r,"coordinates")
-    data_binned  <- ddply(data_binned,.(SurveyDate),mutate,
-        sunset = sunriset(coords,
-            SurveyDate, direction="sunset", POSIXct.out=TRUE)[,2],
-        sunrise = sunriset(coords,
-            SurveyDate+24*60*60, direction="sunrise", POSIXct.out=TRUE)[,2],
-        .progress=progress
-        )
+    #cat("Berechne Sonnenauf/untergangszeiten...\n")
+    #coords <- attr(data_r,"coordinates")
+    #
+    #data_binned  <- ddply(data_binned,.(SurveyDate),mutate,
+    #    sunset = sunriset(coords,
+    #        SurveyDate, direction="sunset", POSIXct.out=TRUE)[,2],
+    #    sunrise = sunriset(coords,
+    #        SurveyDate+24*60*60, direction="sunrise", POSIXct.out=TRUE)[,2],
+    #    coords,
+    #    .progress=progress
+    #    )
 
     data_binned$ProjectName <- factor(data_binned$ProjectName)
     data_binned$species <- factor(data_binned$species)

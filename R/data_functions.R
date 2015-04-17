@@ -17,7 +17,7 @@ readBatscopeXLSX <- function(path=file.choose(),
     quality_col_name="AutoClass1Qual",
     quality_threshold=0.8){
 
-    cat(path,"\nwird eingelesen, kann eine Weile dauern...\n")
+    message("\n",path,"\nwird eingelesen, kann eine Weile dauern...\n")
 
     rawdata <- openxlsx::read.xlsx(path, sheet = 1, 
         startRow = 1, colNames = TRUE, 

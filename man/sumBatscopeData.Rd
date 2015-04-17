@@ -5,7 +5,7 @@
 \title{Summarize Batscope data_r}
 \usage{
 sumBatscopeData(data_r, bin_length = 5, nacht_start = 13, nacht_ende = 12,
-  station_long, station_lat)
+  progress = "text")
 }
 \arguments{
 \item{data_r}{data.frame generated with \link{\code{readBatscopeXLSX}}}
@@ -17,6 +17,9 @@ sumBatscopeData(data_r, bin_length = 5, nacht_start = 13, nacht_ende = 12,
 (for binning)}
 
 \item{bin_width}{length of bins in min}
+
+\item{name}{of the progress bar to use, see
+\link{\code{plyr::create_progress_bar}}}
 }
 \description{
 summarizes the Batscope Data by nights and bins

@@ -132,12 +132,12 @@ sumBatscopeData <- function(
 
     # Sonnenauf und -untergang
     cat("Berechne Sonnenauf/untergangszeiten...\n")
-    
+    coords <- attr(data_r,"coordinates")
     data_binned  <- ddply(data_binned,.(SurveyDate),mutate,
-        sunset = sunriset(attr(data_r,"coordinates"),
-            SurveyDate,direction="sunset",POSIXct.out=TRUE)[,2],
-        sunrise = sunriset(attr(data_r,"coordinates"),
-            SurveyDate+24*60*60,direction="sunrise",POSIXct.out=TRUE)[,2],
+        sunset = sunriset(coords,
+            SurveyDate, direction="sunset", POSIXct.out=TRUE)[,2],
+        sunrise = sunriset(coords,
+            SurveyDate+24*60*60, direction="sunrise", POSIXct.out=TRUE)[,2],
         .progress=progress
         )
 

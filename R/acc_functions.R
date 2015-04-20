@@ -11,10 +11,12 @@ timeOfNight <- function(date){
   dateUTC <- convertToUTC(date)
   
   evening <- hour(dateUTC)>=13
+  evening[is.na(evening)] <- FALSE
   morning <- !hour(dateUTC)>=13
+  morning[is.na(morning)] <- FALSE
 
   dateUTC[evening] <- update(dateUTC[evening], year =1900, month = 1, mday = 1)
-  dateUTC[evening] <- update(dateUTC[morning], year =1900, month = 1, mday = 2)
+  dateUTC[morning] <- update(dateUTC[morning], year =1900, month = 1, mday = 2)
 
   return(dateUTC)
 }

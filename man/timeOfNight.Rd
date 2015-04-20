@@ -4,7 +4,7 @@
 \alias{timeOfNight}
 \title{Time of Night}
 \usage{
-timeOfNight(date, startDate = "1900-01-01")
+timeOfNight(date)
 }
 \arguments{
 \item{date}{a POSIXct object, or a vector thereof}

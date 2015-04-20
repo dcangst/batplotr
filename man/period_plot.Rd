@@ -31,7 +31,6 @@ a \code{ggplot} object
 Plot activity (number of calls) of each night of a given period.
 }
 \seealso{
-Other plot functions: \code{\link{night_plot}};
-  \code{\link{year_plot}}
+Other plot functions: \code{\link{night_plot}}
 }
 

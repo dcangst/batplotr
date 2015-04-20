@@ -13,62 +13,63 @@
 #' @family data functions
 #' @export
 readBatscopeXLSX <- function(path=file.choose(), 
-    species_col_name="AutoClass1", 
-    quality_col_name="AutoClass1Qual",
-    quality_threshold=0.8){
+  species_col_name="AutoClass1", 
+  quality_col_name="AutoClass1Qual",
+  quality_threshold=0.8){
 
-    message("\n",path,"\nwird eingelesen, kann eine Weile dauern...\n")
+  message("\n",path,"\nwird eingelesen, kann eine Weile dauern...\n")
 
-    rawdata <- openxlsx::read.xlsx(path, sheet = 1, 
-        startRow = 1, colNames = TRUE, 
-        skipEmptyRows = TRUE, rowNames = FALSE, 
-        detectDates = FALSE, rows = NULL, cols = NULL)
-    dateOrigin <- openxlsx::getDateOrigin(path)
-    #str(rawdata)
+  rawdata <- openxlsx::read.xlsx(path, sheet = 1, 
+    startRow = 1, colNames = TRUE, 
+    skipEmptyRows = TRUE, rowNames = FALSE, 
+    detectDates = FALSE, rows = NULL, cols = NULL)
+  dateOrigin <- openxlsx::getDateOrigin(path)
+  #str(rawdata)
 
-    # MODIFY DATA for use in R
-    data_r <- rawdata
+  # MODIFY DATA for use in R
+  data_r <- rawdata
 
-    # discard sequences with low quality
-    dim_qual_before <- dim(rawdata)
-    quality_col_nr <- which(colnames(data_r) == quality_col_name)
-    data_r <- subset(data_r,data_r[,quality_col_nr]>=quality_threshold)
-    dim_qual_after <- dim(data_r)
-    dim_qual_diff <- dim_qual_before[1]-dim_qual_after[1]
+  # discard sequences with low quality
+  dim_qual_before <- dim(rawdata)
+  quality_col_nr <- which(colnames(data_r) == quality_col_name)
+  data_r <- subset(data_r,data_r[,quality_col_nr]>=quality_threshold)
+  dim_qual_after <- dim(data_r)
+  dim_qual_diff <- dim_qual_before[1]-dim_qual_after[1]
 
-    cat("Summary of ",quality_col_name,"\n\n",sep="")
-    print(summary(rawdata[,quality_col_nr]))
-    cat("\n\'Discarded ",dim_qual_diff," of ",
-        dim_qual_before[1]," sequences (",
-        (dim_qual_diff/dim_qual_before[1])*100,"%); ",dim_qual_after[1],
-        " remaining\n",sep="")
+  cat("Summary of ",quality_col_name,"\n\n",sep="")
+  print(summary(rawdata[,quality_col_nr]))
+  cat("\n\'Discarded ",dim_qual_diff," of ",
+    dim_qual_before[1]," sequences (",
+    (dim_qual_diff/dim_qual_before[1])*100,"%); ",dim_qual_after[1],
+    " remaining\n",sep="")
 
-    # convert data_r/time format from excel to R
-    data_r$ImportDate <- openxlsx::convertToDateTime(data_r$ImportDate, 
-        origin = dateOrigin)
-    #fix subtle difference in POSIXct representation that messes with 
-    #some functions
-    data_r$ImportDate <- as.POSIXct(as.character(data_r$ImportDate)) 
-    
-    data_r$SurveyDate <- openxlsx::convertToDateTime(data_r$SurveyDate, 
-        origin = dateOrigin)
-    #fix, see above
-    data_r$SurveyDate <- as.POSIXct(as.character(data_r$SurveyDate)) 
-    
-    data_r$recTime <- openxlsx::convertToDateTime(data_r$recTime+data_r$recDate, 
-        origin = dateOrigin)
-    #fix, see above
-    data_r$recTime <- as.POSIXct(as.character(data_r$recTime)) 
+  # convert data_r/time format from excel to R
+  data_r$ImportDate <- openxlsx::convertToDateTime(data_r$ImportDate, 
+    origin = dateOrigin)
+  #fix subtle difference in POSIXct representation that messes with 
+  #some functions
+  data_r$ImportDate <- as.POSIXct(as.character(data_r$ImportDate)) 
+  
+  data_r$SurveyDate <- openxlsx::convertToDateTime(data_r$SurveyDate, 
+    origin = dateOrigin)
+  #fix, see above
+  data_r$SurveyDate <- as.POSIXct(as.character(data_r$SurveyDate)) 
+  
+  data_r$recTime <- openxlsx::convertToDateTime(data_r$recTime+data_r$recDate, 
+    origin = dateOrigin)
+  #fix, see above
+  data_r$recTime <- as.POSIXct(as.character(data_r$recTime)) 
 
-    data_r$recDate <- openxlsx::convertToDateTime(data_r$recDate, origin = dateOrigin)
-    #fix, see above
-    data_r$recDate <- as.POSIXct(as.character(data_r$recDate)) 
+  data_r$recDate <- openxlsx::convertToDateTime(data_r$recDate, 
+    origin = dateOrigin)
+  #fix, see above
+  data_r$recDate <- as.POSIXct(as.character(data_r$recDate)) 
 
-    species_col_nr <- which(names(data_r) == species_col_name)
+  species_col_nr <- which(names(data_r) == species_col_name)
 
-    data_r$species <- data_r[,species_col_nr]
+  data_r$species <- data_r[,species_col_nr]
 
-    return(data_r)
+  return(data_r)
 }
 
 #' Summarize Batscope data_r
@@ -92,92 +93,92 @@ readBatscopeXLSX <- function(path=file.choose(),
 #' @family data functions
 #' @export
 sumBatscopeData <- function(
-    data_r,
-    bin_length=5,
-    nacht_start=13,
-    nacht_ende=12,
-    lat=NULL,
-    long=NULL,
-    progress="text"
-    ){
-    
-    # binning der Daten (in bin_length min Intervalle)
-    n_cuts <-(24+nacht_ende-nacht_start)*(60/bin_length)+1
-    cuts_list <- list()
-    for(i in 1:length(unique(data_r$SurveyDate))){
-        cuts_list[[i]] <- seq(unique(data_r$SurveyDate)[i]+nacht_start*60*60,
-            by=paste0(bin_length," min"),length=n_cuts)
-    }
-    cuts <- as.POSIXct(unlist(cuts_list),origin="1970-01-01 00:00")
-    data_r$bins_factor <- cut(data_r$recTime,cuts,include.lowest=TRUE,
-        right=FALSE)
-    
-    # Zahlen der Events pro Tag, Mikrophon, species und bins
-    cat("Zusammenfassung nach Tag, Project, Species und Bins...\n")
+  data_r,
+  bin_length=5,
+  nacht_start=13,
+  nacht_ende=12,
+  lat=NULL,
+  long=NULL,
+  progress="text"
+  ){
+  
+  # binning der Daten (in bin_length min Intervalle)
+  n_cuts <-(24+nacht_ende-nacht_start)*(60/bin_length)+1
+  cuts_list <- list()
+  for(i in 1:length(unique(data_r$SurveyDate))){
+    cuts_list[[i]] <- seq(unique(data_r$SurveyDate)[i]+nacht_start*60*60,
+      by=paste0(bin_length," min"),length=n_cuts)
+  }
+  cuts <- as.POSIXct(unlist(cuts_list),origin="1970-01-01 00:00")
+  data_r$bins_factor <- cut(data_r$recTime,cuts,include.lowest=TRUE,
+    right=FALSE)
+  
+  # Zahlen der Events pro Tag, Mikrophon, species und bins
+  cat("Zusammenfassung nach Tag, Project, Species und Bins...\n")
 
-    data_binned_bySpecies <- plyr::ddply(data_r,
-        .(SurveyDate,ProjectName,species,bins_factor),
-        summarize,
-        n_events=length(numCallsEstimated),
-        sum_nCalls=sum(numCallsEstimated),
-        meanT_BL=mean(temperature),
-        .progress=progress)
+  data_binned_bySpecies <- plyr::ddply(data_r,
+    .(SurveyDate,ProjectName,species,bins_factor),
+    summarize,
+    n_events=length(numCallsEstimated),
+    sum_nCalls=sum(numCallsEstimated),
+    meanT_BL=mean(temperature),
+    .progress=progress)
 
-    # Zahlen der Events pro Tag, Mikrophon, und bins (alle species)
-    cat("Zusammenfassung Total aller species...\n")
+  # Zahlen der Events pro Tag, Mikrophon, und bins (alle species)
+  cat("Zusammenfassung Total aller species...\n")
 
-    data_binned_allSpecies <- plyr::ddply(data_r,
-        .(SurveyDate,ProjectName,bins_factor),
-        summarize,
-        n_events=length(numCallsEstimated),
-        sum_nCalls=sum(numCallsEstimated),
-        meanT_BL=mean(temperature),
-        .progress=progress)
-    
-    data_binned_allSpecies$species <- factor("all")
-    
-    data_binned <- rbind(data_binned_bySpecies,data_binned_allSpecies)
+  data_binned_allSpecies <- plyr::ddply(data_r,
+    .(SurveyDate,ProjectName,bins_factor),
+    summarize,
+    n_events=length(numCallsEstimated),
+    sum_nCalls=sum(numCallsEstimated),
+    meanT_BL=mean(temperature),
+    .progress=progress)
+  
+  data_binned_allSpecies$species <- factor("all")
+  
+  data_binned <- rbind(data_binned_bySpecies,data_binned_allSpecies)
 
-    data_binned$bins <- as.POSIXct(data_binned$bins_factor)
+  data_binned$bins <- as.POSIXct(data_binned$bins_factor)
 
-    # GPS Koordinaten
-    if(is.null(lat) | is.null(long)){
-        gps_coords <- ddply(data_r,.(ProjectName),summarize,
-            lat=mean(GPSLatitude[GPSValid=="yes"],na.rm=TRUE),
-            long=mean(GPSLongitude[GPSValid=="yes"],na.rm=TRUE)
-            )
-        print(gps_coords)
-        if(any(is.na(gps_coords))){
-            stop("GPS Koordinaten nicht für alle Stationen vorhanden.")
-            stop("Bitte manuell eingeben.")
-        } else {
-            message("Koordinaten von Batlogger verwendet.")
-        }
+  # GPS Koordinaten
+  if(is.null(lat) | is.null(long)){
+    gps_coords <- ddply(data_r,.(ProjectName),summarize,
+      lat=mean(GPSLatitude[GPSValid=="yes"],na.rm=TRUE),
+      long=mean(GPSLongitude[GPSValid=="yes"],na.rm=TRUE)
+      )
+    print(gps_coords)
+    if(any(is.na(gps_coords))){
+      stop("GPS Koordinaten nicht für alle Stationen vorhanden.")
+      stop("Bitte manuell eingeben.")
     } else {
-        gps_coords <- data.frame(
-            ProjectName=unique(data_r$ProjectName),
-            lat,
-            long)
-        print(gps_coords)
-        message("Manuelle Koordinaten verwendet.")
+      message("Koordinaten von Batlogger verwendet.")
     }
+  } else {
+    gps_coords <- data.frame(
+      ProjectName=unique(data_r$ProjectName),
+      lat,
+      long)
+    print(gps_coords)
+    message("Manuelle Koordinaten verwendet.")
+  }
 
-    data_binned <- merge(data_binned,gps_coords)
+  data_binned <- merge(data_binned,gps_coords)
 
-    # Sonnenauf und -untergang
-    cat("Berechne Sonnenauf/untergangszeiten...\n")
-    
-    gps_matrix <- matrix(c(data_binned$long,data_binned$lat),ncol=2)
-    data_binned$sunset <- sunriset(
-        gps_matrix,data_binned$SurveyDate,
-         direction="sunset", POSIXct.out=TRUE)[,2]
+  # Sonnenauf und -untergang
+  cat("Berechne Sonnenauf/untergangszeiten...\n")
+  
+  gps_matrix <- matrix(c(data_binned$long,data_binned$lat),ncol=2)
+  data_binned$sunset <- sunriset(
+    gps_matrix,data_binned$SurveyDate,
+    direction="sunset", POSIXct.out=TRUE)[,2]
 
-    data_binned$sunrise <- sunriset(
-        gps_matrix,data_binned$SurveyDate+24*60*60,
-         direction="sunrise", POSIXct.out=TRUE)[,2]
+  data_binned$sunrise <- sunriset(
+    gps_matrix,data_binned$SurveyDate+24*60*60,
+    direction="sunrise", POSIXct.out=TRUE)[,2]
 
-    data_binned$ProjectName <- factor(data_binned$ProjectName)
-    data_binned$species <- factor(data_binned$species)
+  data_binned$ProjectName <- factor(data_binned$ProjectName)
+  data_binned$species <- factor(data_binned$species)
 
-    return(data_binned)
+  return(data_binned)
 }

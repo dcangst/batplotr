@@ -1,8 +1,8 @@
 #' Time of Night
 #' 
-#' gives back a \code{POSIXct} object with date StartDate (evening) or 
-#' StartDate+1 but with same timestamp for plotting, corrects for daylight saving
-#' time
+#' gives back a \code{POSIXct} object with date 1900-01-01 (evening) or 
+#' 1900-01-02 (morning) but with same timestamp for plotting, 
+#' corrects for daylight saving time.
 #'
 #' @param date a POSIXct object, or a vector thereof
 #' @family accessory functions
@@ -29,7 +29,7 @@ timeOfNight <- function(date){
 #' @family accessory functions
 #' @export
 convertToUTC <- function(date){
-    date_utc <- force_tz(date,tzone="UTC")-3600*dst(date)
+  date_utc <- force_tz(date,tzone="UTC")-3600*dst(date)
 }
 
 #' Print Head of a list of data.frames
@@ -40,8 +40,8 @@ convertToUTC <- function(date){
 #' @param n number of rows to print
 #' @family accessory functions
 #' @export 
-listHead <- function(list,n="5"){
-    for(i in 1:length(list)){
-        print(head(list[[i]],n))
-    }
+listHead <- function(list,n=6){
+  for(i in 1:length(list)){
+    print(head(list[[i]],n))
+  }
 }

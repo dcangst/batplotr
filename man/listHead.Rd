@@ -4,7 +4,7 @@
 \alias{listHead}
 \title{Print Head of a list of data.frames}
 \usage{
-listHead(list, n = "5")
+listHead(list, n = 6)
 }
 \arguments{
 \item{list}{a list of \code{data.frame}s}

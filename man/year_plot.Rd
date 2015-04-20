@@ -14,6 +14,6 @@ Plot activity (number of calls) over one night for every data point.
 }
 \seealso{
 Other plot functions: \code{\link{night_plot}};
-  \code{\link{year_plot_all}}
+  \code{\link{period_plot}}
 }
 

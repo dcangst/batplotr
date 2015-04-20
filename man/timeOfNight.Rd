@@ -4,14 +4,14 @@
 \alias{timeOfNight}
 \title{Time of Night}
 \usage{
-timeOfNight(date)
+timeOfNight(date, startDate = "1900-01-01")
 }
 \arguments{
 \item{date}{a POSIXct object, or a vector thereof}
 }
 \description{
-gives back a \code{POSIXct} object with date 1900-01-01 (evening) or
-1900-01-02 but with same timestamp for plotting, corrects for daylight saving
+gives back a \code{POSIXct} object with date StartDate (evening) or
+StartDate+1 but with same timestamp for plotting, corrects for daylight saving
 time
 }
 \seealso{

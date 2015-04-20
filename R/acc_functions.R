@@ -7,12 +7,16 @@
 #' @param date a POSIXct object, or a vector thereof
 #' @family accessory functions
 #' @export
-timeOfNight <- function(date,startDate="1900-01-01"){
-    minDate <- strptime(min(date),format="%F")
-    timeOfNight <- as.POSIXct(startDate)+
-        difftime(date,minDate)
-    timeOfNight <- force_tz(timeOfNight,tzone="UTC")-3600*dst(date)
-    return(timeOfNight)
+timeOfNight <- function(date){
+  dateUTC <- convertToUTC(date)
+  
+  evening <- hour(dateUTC)>=13
+  morning <- !hour(dateUTC)>=13
+
+  dateUTC[evening] <- update(dateUTC[evening], year =1900, month = 1, mday = 1)
+  dateUTC[evening] <- update(dateUTC[morning], year =1900, month = 1, mday = 2)
+
+  return(dateUTC)
 }
 
 #' Convert to UTC

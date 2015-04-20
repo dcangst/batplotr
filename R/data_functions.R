@@ -81,10 +81,10 @@ readBatscopeXLSX <- function(path=file.choose(),
 #'  (for binning)
 #' @param nacht_ende integer, clocktime (hour) when the night ends 
 #'  (for binning)
-#' @param GPSLatitude vector of GPS latitudes for the stations
+#' @param lat vector of GPS latitudes for the stations
 #'  (recycled if needed). If NULL (default) the logged GPS data will be used 
 #'  (averaged for each station)
-#' @param GPSLongitude vector of GPS longitudes for the stations
+#' @param long vector of GPS longitudes for the stations
 #'  (recycled if needed). If NULL (default) the logged GPS data will be used 
 #'  (averaged for each station) 
 #' @param progress name of the progress bar to use, see 
@@ -158,6 +158,8 @@ sumBatscopeData <- function(
             ProjectName=unique(data_r$ProjectName),
             lat,
             long)
+        print(gps_coords)
+        message("Manuelle Koordinaten verwendet.")
     }
 
     data_binned <- merge(data_binned,gps_coords)

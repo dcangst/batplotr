@@ -16,18 +16,18 @@ sumBatscopeData(data_r, bin_length = 5, nacht_start = 13, nacht_ende = 12,
 \item{nacht_ende}{integer, clocktime (hour) when the night ends
 (for binning)}
 
+\item{lat}{vector of GPS latitudes for the stations
+(recycled if needed). If NULL (default) the logged GPS data will be used
+(averaged for each station)}
+
+\item{long}{vector of GPS longitudes for the stations
+(recycled if needed). If NULL (default) the logged GPS data will be used
+(averaged for each station)}
+
 \item{progress}{name of the progress bar to use, see
 \link{\code{plyr::create_progress_bar}}}
 
 \item{bin_width}{length of bins in min}
-
-\item{GPSLatitude}{vector of GPS latitudes for the stations
-(recycled if needed). If NULL (default) the logged GPS data will be used
-(averaged for each station)}
-
-\item{GPSLongitude}{vector of GPS longitudes for the stations
-(recycled if needed). If NULL (default) the logged GPS data will be used
-(averaged for each station)}
 }
 \description{
 summarizes the Batscope Data by nights and bins

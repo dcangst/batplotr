@@ -1,16 +1,17 @@
 #' Time of Night
 #' 
-#' gives back a \code{POSIXct} object with date 1900-01-01 (evening) or 
-#' 1900-01-02 but with same timestamp for plotting, corrects for daylight saving
+#' gives back a \code{POSIXct} object with date StartDate (evening) or 
+#' StartDate+1 but with same timestamp for plotting, corrects for daylight saving
 #' time
 #'
 #' @param date a POSIXct object, or a vector thereof
 #' @family accessory functions
 #' @export
-timeOfNight <- function(date){
+timeOfNight <- function(date,startDate="1900-01-01"){
     minDate <- strptime(min(date),format="%F")
-    timeOfNight <- as.POSIXct("1900-01-01")+
+    timeOfNight <- as.POSIXct(startDate)+
         difftime(date,minDate)
+    timeOfNight <- force_tz(timeOfNight,tzone="UTC")-3600*dst(date)
     return(timeOfNight)
 }
 

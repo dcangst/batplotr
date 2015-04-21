@@ -89,7 +89,7 @@ readBatscopeXLSX <- function(path=file.choose(),
 #'  (recycled if needed). If NULL (default) the logged GPS data will be used 
 #'  (averaged for each station) 
 #' @param progress name of the progress bar to use, see 
-#'  \link{\code{plyr::create_progress_bar}} 
+#'  \link{\code{create_progress_bar}} 
 #' @family data functions
 #' @export
 sumBatscopeData <- function(
@@ -142,25 +142,26 @@ sumBatscopeData <- function(
   data_binned$bins <- as.POSIXct(data_binned$bins_factor)
 
   # GPS Koordinaten
+  cat("GPS Koordinaten bearbeiten...\n")
   if(is.null(lat) | is.null(long)){
     gps_coords <- ddply(data_r,.(ProjectName),summarize,
       lat=mean(GPSLatitude[GPSValid=="yes"],na.rm=TRUE),
       long=mean(GPSLongitude[GPSValid=="yes"],na.rm=TRUE)
       )
-    print(gps_coords)
     if(any(is.na(gps_coords))){
       stop("GPS Koordinaten nicht für alle Stationen vorhanden.")
       stop("Bitte manuell eingeben.")
     } else {
       message("Koordinaten von Batlogger verwendet.")
+      print(gps_coords)
     }
   } else {
     gps_coords <- data.frame(
       ProjectName=unique(data_r$ProjectName),
       lat,
       long)
-    print(gps_coords)
     message("Manuelle Koordinaten verwendet.")
+    print(gps_coords)
   }
 
   data_binned <- merge(data_binned,gps_coords)

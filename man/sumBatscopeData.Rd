@@ -25,7 +25,7 @@ sumBatscopeData(data_r, bin_length = 5, nacht_start = 13, nacht_ende = 12,
 (averaged for each station)}
 
 \item{progress}{name of the progress bar to use, see
-\link{\code{plyr::create_progress_bar}}}
+\link{\code{create_progress_bar}}}
 
 \item{bin_width}{length of bins in min}
 }

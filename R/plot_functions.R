@@ -39,7 +39,7 @@ nightPlot <- function(plotData,
   }
 
   nightPlot <- ggplot(plotData_sub,aes(bins,n_events,fill=species))+
-    facet_wrap(~ProjectName)+
+    facet_wrap(~ProjectName, ncol = 2)+
     geom_bar(stat="identity",position="dodge",width=300)+
     geom_vline(aes(xintercept=as.numeric(sunset)),
       colour="orange")+

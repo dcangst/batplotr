@@ -13,7 +13,7 @@ nightPlot(plotData, day = min(plotData$SurveyDate), sel_species = "every",
 \item{day}{day to plot in POSIXct format or "YYYY-MM-DD", defaults to first
 date in \code{plotData}}
 
-\item{sel_species}{species_name or vector of species to plot, use "every" to
+\item{sel_species}{species name or vector of species to plot, use "every" to
 plot all species individually (differentiated by color)}
 
 \item{x_limits}{x-axis limits, NULL (default) or a POSIXct vector of length 2}

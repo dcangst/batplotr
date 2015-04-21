@@ -76,32 +76,31 @@ readBatscopeXLSX <- function(path=file.choose(),
 #' 
 #' summarizes the Batscope Data by nights and bins
 #'
-#' @param data_r data.frame generated with \link{\code{readBatscopeXLSX}}
+#' @param data_r data.frame generated with \code{\link{readBatscopeXLSX}}
 #' @param bin_width length of bins in min
-#' @param nacht_start integer, clocktime (hour) when the night starts 
-#'  (for binning)
-#' @param nacht_ende integer, clocktime (hour) when the night ends 
-#'  (for binning)
 #' @param lat vector of GPS latitudes for the stations
-#'  (recycled if needed). If NULL (default) the logged GPS data will be used 
-#'  (averaged for each station)
+#'   (recycled if needed). If NULL (default) the logged GPS data will be used 
+#'   (averaged for each station)
 #' @param long vector of GPS longitudes for the stations
-#'  (recycled if needed). If NULL (default) the logged GPS data will be used 
-#'  (averaged for each station) 
+#'   (recycled if needed). If NULL (default) the logged GPS data will be used 
+#'   (averaged for each station) 
 #' @param progress name of the progress bar to use, see 
-#'  \link{\code{create_progress_bar}} 
+#'   \code{\link[plyr]{create_progress_bar}} 
 #' @family data functions
 #' @export
 sumBatscopeData <- function(
   data_r,
   bin_length=5,
-  nacht_start=13,
-  nacht_ende=12,
   lat=NULL,
   long=NULL,
   progress="text"
   ){
   
+  # wann startet die nacht und wann endet sie. Wird nur für binning
+  # verwendet.
+  nacht_start <- 13
+  nacht_ende <- 12
+
   # binning der Daten (in bin_length min Intervalle)
   n_cuts <-(24+nacht_ende-nacht_start)*(60/bin_length)+1
   cuts_list <- list()

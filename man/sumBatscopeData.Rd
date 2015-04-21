@@ -4,17 +4,11 @@
 \alias{sumBatscopeData}
 \title{Summarize Batscope data_r}
 \usage{
-sumBatscopeData(data_r, bin_length = 5, nacht_start = 13, nacht_ende = 12,
-  lat = NULL, long = NULL, progress = "text")
+sumBatscopeData(data_r, bin_length = 5, lat = NULL, long = NULL,
+  progress = "text")
 }
 \arguments{
-\item{data_r}{data.frame generated with \link{\code{readBatscopeXLSX}}}
-
-\item{nacht_start}{integer, clocktime (hour) when the night starts
-(for binning)}
-
-\item{nacht_ende}{integer, clocktime (hour) when the night ends
-(for binning)}
+\item{data_r}{data.frame generated with \code{\link{readBatscopeXLSX}}}
 
 \item{lat}{vector of GPS latitudes for the stations
 (recycled if needed). If NULL (default) the logged GPS data will be used
@@ -25,7 +19,7 @@ sumBatscopeData(data_r, bin_length = 5, nacht_start = 13, nacht_ende = 12,
 (averaged for each station)}
 
 \item{progress}{name of the progress bar to use, see
-\link{\code{create_progress_bar}}}
+\code{\link[plyr]{create_progress_bar}}}
 
 \item{bin_width}{length of bins in min}
 }

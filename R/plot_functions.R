@@ -11,7 +11,7 @@
 #' @return a \code{ggplot} object
 #' @family plot functions
 #' @export
-night_plot <- function(plotData, 
+nightPlot <- function(plotData, 
   day=unique(plotData$SurveyDate)[1],
   sel_species="every",
   x_limits=NULL,
@@ -69,7 +69,7 @@ night_plot <- function(plotData,
 #' @return a \code{ggplot} object
 #' @family plot functions
 #' @export
-period_plot <- function(plotData, 
+periodPlot <- function(plotData, 
   start_date=floor_date(min(plotData$SurveyDate),"year"),
   end_date=ceiling_date(max(plotData$SurveyDate),"year"),
   sel_species="every",

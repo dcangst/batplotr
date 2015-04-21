@@ -2,8 +2,8 @@
 
 export(convertToUTC)
 export(listHead)
-export(night_plot)
-export(period_plot)
+export(nightPlot)
+export(periodPlot)
 export(readBatscopeXLSX)
 export(sumBatscopeData)
 export(timeOfNight)

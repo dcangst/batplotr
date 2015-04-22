@@ -38,7 +38,8 @@ nightPlot <- function(plotData,
     y_limits <- c(0,max(plotData_sub$n_events))
   }
 
-  plottitle <- paste("Aktivität (# Sequencen)",str_c(format(day,format="%d.%m.%Y"),collapse=" - "))
+  plottitle <- paste("Aktivitaet (# Sequencen)",str_c(format(day,format="%d.%m.%Y"),collapse=" - "))
+  bin_width <- as.integer(plotData$bins[2]-plotData$bins[1])*60
 
   nightPlot <- ggplot(plotData_sub,aes(bins,n_events,fill=species))+
     facet_wrap(~ProjectName, ncol = 2)+
@@ -51,7 +52,7 @@ nightPlot <- function(plotData,
       minor_breaks=date_breaks("1 hour"),
       labels = date_format("%H:%M"))+
     scale_y_continuous(limits=y_limits,breaks=seq(0,max(y_limits),2))+
-    labs(x="Uhrzeit",y="Aktivität (# Events)",title=plottitle)
+    labs(x="Uhrzeit",y="Aktivitaet (# Events)",title=plottitle)
 
   return(nightPlot)
   }
@@ -100,17 +101,17 @@ periodPlot <- function(plotData,
     plotData_sub <- subset(plotData,
       SurveyDate %within% new_interval(start_date, end_date) &
       species!="all")
-    plottitle <- paste("Tagesaktivität",format(start_date,format="%d.%m.%Y"),
+    plottitle <- paste("Tagesaktivitaet",format(start_date,format="%d.%m.%Y"),
       "bis",format(end_date,format="%d.%m.%Y"),"| Summe aller Spezies")
   } else {
     plotData_sub <- subset(plotData,
       SurveyDate %within% new_interval(start_date, end_date) & 
       species %in% sel_species)
     if(length(sel_species)==1){
-      plottitle <- paste("Tagesaktivität",format(start_date,format="%d.%m.%Y"),
+      plottitle <- paste("Tagesaktivitaet",format(start_date,format="%d.%m.%Y"),
         "bis",format(end_date,format="%d.%m.%Y"),"|",sel_species)
     } else {
-      plottitle <- paste("Tagesaktivität",format(start_date,format="%d.%m.%Y"),
+      plottitle <- paste("Tagesaktivitaet",format(start_date,format="%d.%m.%Y"),
         "bis",format(end_date,format="%d.%m.%Y"))
     }
   }

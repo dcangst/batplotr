@@ -1,26 +1,23 @@
-# batplotR - BatScope Datenvisualisation mit R
+# batplotR - BatScope Data Visualization in R
 
-## Über `batplotR`
+## About `batplotR`
 
+`batplotR` is a package to visualize data generated with [BatScope](http://www.wsl.ch/dienstleistungen/produkte/software/batscope/index_DE) and allows simple visualization of short (one night) and long (many nights) time-series of ultrasound calls recorded with a BatLogger. All you need is a Excel file export from BatScope
 
+## How to install
 
-`batplotR` ist eine R Package die im Rahmen eines Zivildiensteinsatzes entwickelt wurde. Sie wurde für die Darstellung von mit [BatScope](http://www.wsl.ch/dienstleistungen/produkte/software/batscope/index_DE) ausgewerteten Bioakustikdaten entwickelt und erlaubt es kurze (d.h. über  eine Nacht) und lange (d.h. mehrere Nächte) Beobachtungsreihen darzustellen. Ausgangspunkt ist in jedem Fall ein `.xlsx`-Exportfile von Batscope ( getestet , mit BatScope v.3.1.6)
-    
-Die Package ist GPL-3 lizenziert und auf [GitHub gehostet](https://github.com/dcangst/batplotr), kann also beliebig geforkt, weitergegeben und  verändert  werden.
+To install `batplotr` you need the [`devtools`](https://github.com/hadley/devtools)package which can be installed from CRAN. Once installed you can run the following code to get the latest version `batplotr`:
 
-## Installation
-
-`batplotR` kann direkt von GitHub installiert werden, voraussetzung ist die Package [`devtools`](https://github.com/hadley/devtools) die über CRAN erhältlich ist und wie folgt installiert werden kann:
-
-
-```r
-install.packages(c("devtools"),dependencies=TRUE)
 ```
-danach kann batplotR direkt von GitHub installiert werden (es werden auch verschiedene andere Packages installiert, die von batplotR benötigt werden):
+library(devtools)
+install_github("dcangst/batplotr")
+```
 
+or to get a specific version:
 
-```r
-devtools::install_github("dcangst/batplotr",dependencies=TRUE)
+```
+library(devtools)
+install_github("dcangst/batplotr", ref="v0.1")
 ```
 
 ## Usage
@@ -34,3 +31,4 @@ nightPlot(batScopeData_sum)
 periodPlot(batScopeData_sum)
 ```
 
+ther is also a detailed manual here, but unfortunately in German only

@@ -10,21 +10,24 @@
 #'  relevant quality scores
 #' @param quality_threshold sequences with species assignment quality below this
 #'  threshold will be discarded.
+#' @param shiny_progress display more progress info for shiny
 #' @family data functions
 #' @export
 readBatscopeXLSX <- function(path=file.choose(), 
   species_col_name="AutoClass1", 
   quality_col_name="AutoClass1Qual",
-  quality_threshold=0.8){
+  quality_threshold=0.8,
+  shiny_progress=FALSE){
 
   message("\n",path,"\nwird eingelesen, kann eine Weile dauern...\n")
-
+  if(shiny_progress){incProgress(0.1, detail = ".xlsx lesen..")}
   rawdata <- openxlsx::read.xlsx(path, sheet = 1, 
     startRow = 1, colNames = TRUE, 
     skipEmptyRows = TRUE, rowNames = FALSE, 
     detectDates = FALSE, rows = NULL, cols = NULL)
   dateOrigin <- openxlsx::getDateOrigin(path)
   #str(rawdata)
+  if(shiny_progress){incProgress(0.6, detail = "Qualitaetspruefung...")}
 
   # MODIFY DATA for use in R
   data_r <- rawdata
@@ -36,6 +39,7 @@ readBatscopeXLSX <- function(path=file.choose(),
   dim_qual_after <- dim(data_r)
   dim_qual_diff <- dim_qual_before[1]-dim_qual_after[1]
 
+
   cat("Summary of ",quality_col_name,"\n\n",sep="")
   print(summary(rawdata[,quality_col_nr]))
   cat("\n\'Discarded ",dim_qual_diff," of ",
@@ -43,6 +47,7 @@ readBatscopeXLSX <- function(path=file.choose(),
     (dim_qual_diff/dim_qual_before[1])*100,"%); ",dim_qual_after[1],
     " remaining\n",sep="")
 
+  if(shiny_progress){incProgress(0.1, detail = "Daten formatieren...")}
   # convert data_r/time format from excel to R
   data_r$ImportDate <- openxlsx::convertToDateTime(data_r$ImportDate, 
     origin = dateOrigin)
@@ -85,7 +90,8 @@ readBatscopeXLSX <- function(path=file.choose(),
 #'   (recycled if needed). If NULL (default) the logged GPS data will be used 
 #'   (averaged for each station) 
 #' @param progress name of the progress bar to use, see 
-#'   \code{\link[plyr]{create_progress_bar}} 
+#'   \code{\link[plyr]{create_progress_bar}}
+#' @param shiny_progress display more progress info for shiny
 #' @family data functions
 #' @export
 sumBatscopeData <- function(
@@ -93,14 +99,15 @@ sumBatscopeData <- function(
   bin_length=5,
   lat=NULL,
   long=NULL,
-  progress="text"
+  progress="text",
+  shiny_progress=FALSE
   ){
   
-  # wann startet die nacht und wann endet sie. Wird nur für binning
+  # wann startet die nacht und wann endet sie. Wird nur fuer binning
   # verwendet.
   nacht_start <- 13
   nacht_ende <- 12
-
+  if(shiny_progress){incProgress(0.1, detail = "Binning...")}
   # binning der Daten (in bin_length min Intervalle)
   n_cuts <-(24+nacht_ende-nacht_start)*(60/bin_length)+1
   cuts_list <- list()
@@ -113,7 +120,12 @@ sumBatscopeData <- function(
     right=FALSE)
   
   # Zahlen der Events pro Tag, Mikrophon, species und bins
-  cat("Zusammenfassung nach Tag, Project, Species und Bins...\n")
+  
+  if(shiny_progress){incProgress(0.2, detail = 
+    "Zusammenfassung nach Tag, Project, Species und Bins...")
+  } else {
+    cat("Zusammenfassung nach Tag, Project, Spezies und Bins...\n")
+  }
 
   data_binned_bySpecies <- plyr::ddply(data_r,
     .(SurveyDate,ProjectName,species,bins_factor),
@@ -124,7 +136,12 @@ sumBatscopeData <- function(
     .progress=progress)
 
   # Zahlen der Events pro Tag, Mikrophon, und bins (alle species)
-  cat("Zusammenfassung Total aller species...\n")
+  
+  if(shiny_progress){incProgress(0.2, detail = 
+    "Zusammenfassung Total aller species...")
+  } else {
+    cat("Zusammenfassung Total aller species...\n")
+  }
 
   data_binned_allSpecies <- plyr::ddply(data_r,
     .(SurveyDate,ProjectName,bins_factor),
@@ -141,14 +158,20 @@ sumBatscopeData <- function(
   data_binned$bins <- as.POSIXct(data_binned$bins_factor)
 
   # GPS Koordinaten
-  cat("GPS Koordinaten bearbeiten...\n")
+
+  if(shiny_progress){incProgress(0.2, detail = 
+    "GPS Koordinaten bearbeiten...")
+  } else {
+    cat("GPS Koordinaten bearbeiten...\n")
+  }
+
   if(is.null(lat) | is.null(long)){
     gps_coords <- ddply(data_r,.(ProjectName),summarize,
       lat=mean(GPSLatitude[GPSValid=="yes"],na.rm=TRUE),
       long=mean(GPSLongitude[GPSValid=="yes"],na.rm=TRUE)
       )
     if(any(is.na(gps_coords))){
-      stop("GPS Koordinaten nicht für alle Stationen vorhanden.")
+      stop("GPS Koordinaten nicht fuer alle Stationen vorhanden.")
       stop("Bitte manuell eingeben.")
     } else {
       message("Koordinaten von Batlogger verwendet.")
@@ -166,8 +189,12 @@ sumBatscopeData <- function(
   data_binned <- merge(data_binned,gps_coords)
 
   # Sonnenauf und -untergang
-  cat("Berechne Sonnenauf/untergangszeiten...\n")
-  
+  if(shiny_progress){incProgress(0.2, detail = 
+    "Berechne Sonnenauf und -untergangszeiten...")
+  } else {
+    cat("Berechne Sonnenauf und -untergangszeiten...\n")
+  }
+    
   gps_matrix <- matrix(c(data_binned$long,data_binned$lat),ncol=2)
   data_binned$sunset <- sunriset(
     gps_matrix,data_binned$SurveyDate,

@@ -5,7 +5,7 @@
 \title{Summarize Batscope data_r}
 \usage{
 sumBatscopeData(data_r, bin_length = 5, lat = NULL, long = NULL,
-  progress = "text")
+  progress = "text", shiny_progress = FALSE)
 }
 \arguments{
 \item{data_r}{data.frame generated with \code{\link{readBatscopeXLSX}}}
@@ -20,6 +20,8 @@ sumBatscopeData(data_r, bin_length = 5, lat = NULL, long = NULL,
 
 \item{progress}{name of the progress bar to use, see
 \code{\link[plyr]{create_progress_bar}}}
+
+\item{shiny_progress}{display more progress info for shiny}
 
 \item{bin_width}{length of bins in min}
 }

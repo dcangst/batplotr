@@ -2,12 +2,16 @@
 #' 
 #' launches an interactive web app
 #'
+#' @param shiny_options a list of options passed to shinyApp
 #' @return launches a WebApp
 #' @family interactive functions
 #' @export
-batPlotR <- function() {
+batPlotR <- function(
+  shiny_options=list(shiny.maxRequestSize=100*1024^2,
+                     launch.browser=TRUE)
+  ) {
   shinyApp(
-    options=list(shiny.maxRequestSize=100*1024^2),
+    options=shiny_options,
     ui = shinyUI(fluidPage(
     
       # Application title

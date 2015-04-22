@@ -2,16 +2,15 @@
 #' 
 #' launches an interactive web app
 #'
-#' @param shiny_options a list of options passed to shinyApp
+#' @param option.list a list of global shiny options
 #' @return launches a WebApp
 #' @family interactive functions
 #' @export
 batPlotR <- function(
-  shiny_options=list(shiny.maxRequestSize=100*1024^2,
-                     launch.browser=TRUE)
+  option.list=list(shiny.launch.browser=TRUE,shiny.maxRequestSize=100*1024^2)
   ) {
   shinyApp(
-    options=shiny_options,
+    onStart=function(options=option.list){options(options)},
     ui = shinyUI(fluidPage(
     
       # Application title
@@ -42,19 +41,23 @@ batPlotR <- function(
                        min = 1,
                        max = 120),
           tags$hr(),
-          checkboxGroupInput("project", "Standorte:",
-                       c("?" = "?"
-                         )),
+          selectizeInput(
+            'project', 'Standorte', choices = "?", multiple = TRUE
+          ),
+          selectizeInput(
+            'species', 'Species', choices = "?", multiple = TRUE
+          ),
           dateRangeInput("dates", label = "Date range")
         ),
         
         # Show a tabset that includes a plot, summary, and table view
         # of the generated distribution
         mainPanel(
-          tabsetPanel(type = "tabs", 
-            tabPanel("nightPlot", plotOutput("nightPlot")), 
-            tabPanel("periodPlot", plotOutput("periodPlot")), 
-            tabPanel("Data", dataTableOutput("table"))
+          tabsetPanel(type = "tabs",id="tabs", 
+            tabPanel("nightPlot", plotOutput("nightPlot",height = "600px")), 
+            tabPanel("periodPlot", plotOutput("periodPlot",height = "600px")), 
+            tabPanel("Summary", dataTableOutput("sum_table")),
+            tabPanel("Data", dataTableOutput("data_table"))
           )
         )
       )
@@ -67,18 +70,34 @@ batPlotR <- function(
         
           projectNames <- unique(dataInput()$ProjectName)
           names(projectNames) <- projectNames
-          cb_options <- as.list(projectNames)
+          project_options <- as.list(projectNames)
         
-          updateCheckboxGroupInput(session, "project",
-            choices = cb_options,
+          updateSelectizeInput(session, "project",
+            choices = project_options,
             selected = projectNames
           )
-    
-          updateDateRangeInput(session, "dates", 
-            start = format(min(dataInput()$SurveyDate),"%Y-%m-%d"), 
-            end = format(min(dataInput()$SurveyDate),"%Y-%m-%d")
+
+          speciesNames <- unique(dataSummary()$species)
+          names(speciesNames) <- speciesNames
+          species_options <- as.list(speciesNames)
+
+          updateSelectizeInput(session, "species",
+            choices = species_options,
+            selected = "all"
           )
-        
+
+          if(input$tabs=="nightPlot"){
+            updateDateRangeInput(session, "dates", 
+              start = format(min(dataInput()$SurveyDate),"%Y-%m-%d"), 
+              end = format(min(dataInput()$SurveyDate),"%Y-%m-%d")
+            )
+          }
+          if(input$tabs=="periodPlot"){
+            updateDateRangeInput(session, "dates", 
+              start = format(min(dataInput()$SurveyDate),"%Y-%m-%d"), 
+              end = format(max(dataInput()$SurveyDate),"%Y-%m-%d")
+            )
+          }
       })
 
       dataInput <- reactive({
@@ -88,43 +107,67 @@ batPlotR <- function(
         inFile <- input$file1
         pathname <- gsub("//", "/",inFile$datapath)
         path <- file.copy(pathname,paste0(pathname,".xlsx"))
-    
-        data <- readBatscopeXLSX(
-          path=paste0(pathname,".xlsx"),
-          species_col_name = input$speciesName,
-          quality_col_name = input$speciesQualName,
-          quality_threshold  = input$qual)
-    
+
+        withProgress(message = paste(inFile$name,"wird eingelesen... (Geduld!)"), value = 0.3, {
+          data <- readBatscopeXLSX(
+            path=paste0(pathname,".xlsx"),
+            species_col_name = input$speciesName,
+            quality_col_name = input$speciesQualName,
+            quality_threshold  = input$qual)
+          incProgress(1, detail = paste("Fertig!"))
+        })
         return(data)
       })
     
       dataSummary <- reactive({
-        daten_sum <- sumBatscopeData(
-          dataInput(),
-          bin_length=input$bins,
-          progress="none"
+        validate(
+          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
+        inFile <- input$file1
+        withProgress(message = paste(inFile$name,"wird analysiert... (Geduld!)"), value = 0.3, {
+          daten_sum <- sumBatscopeData(
+            dataInput(),
+            bin_length=input$bins,
+            progress="none"
+          )
+          incProgress(1, detail = paste("Fertig!"))
+        })
+
         return(daten_sum)
       })
     
-      output$table <- renderDataTable({
+      output$data_table <- renderDataTable({
         validate(
           need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
         dataSummary()
       })
+
+      output$sum_table <- renderDataTable({
+        validate(
+          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
+        )
+        ddply(dataSummary(),.(ProjectName,SurveyDate),summarize,n_events_day=sum(n_events))
+      })
     
       output$nightPlot <- renderPlot({
-        print(input$dates[1])
-        print(as.character(input$dates[1]) %in% format(dataSummary()$SurveyDate,"%Y-%m-%d"))
+
         validate(
           need(as.character(input$dates[1]) %in% format(dataSummary()$SurveyDate,"%Y-%m-%d"),"Keine Datenpunkte für ausgewähltes Datum")
         )
     
-          plotData <- subset(dataSummary(),ProjectName %in% input$project)
-          nightPlot(plotData,day=as.character(input$dates))
+        plotData <- subset(dataSummary(),ProjectName %in% input$project)
+        nightPlot(plotData,day=as.character(input$dates))
     
-      }) 
+      })
+
+      output$periodPlot <- renderPlot({
+        plotData <- subset(dataSummary(),ProjectName %in% input$project)
+        periodPlot(plotData,
+          start_date=as.character(input$dates[1]),
+          end_date=as.character(input$dates[2]))
+      })  
     }
   )
 }
+

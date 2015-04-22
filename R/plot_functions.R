@@ -38,6 +38,8 @@ nightPlot <- function(plotData,
     y_limits <- c(0,max(plotData_sub$n_events))
   }
 
+  plottitle <- paste("Aktivität (# Sequencen)",str_c(format(day,format="%d.%m.%Y"),collapse=" - "))
+
   nightPlot <- ggplot(plotData_sub,aes(bins,n_events,fill=species))+
     facet_wrap(~ProjectName, ncol = 2)+
     geom_bar(stat="identity",position="dodge",width=300)+
@@ -49,7 +51,7 @@ nightPlot <- function(plotData,
       minor_breaks=date_breaks("1 hour"),
       labels = date_format("%H:%M"))+
     scale_y_continuous(limits=y_limits,breaks=seq(0,max(y_limits),2))+
-    labs(x="Uhrzeit",y="Aktivität (# Events)",title=str_c(day,collapse=" | "))
+    labs(x="Uhrzeit",y="Aktivität (# Events)",title=plottitle)
 
   return(nightPlot)
   }
@@ -146,7 +148,7 @@ periodPlot <- function(plotData,
       size=0.3,color="grey25")+
     geom_line(aes(SurveyDate,sunset_time),
       size=0.3,color="grey25")+
-    facet_wrap(~ProjectName)+
+    facet_wrap(~ProjectName,ncol = 2)+
     scale_x_datetime(limits=x_limits,breaks=date_breaks("months"),
       labels=date_format("%b %Y"))+
     scale_y_datetime(limits=y_limits,breaks=date_breaks("2 hour"),

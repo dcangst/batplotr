@@ -4,11 +4,11 @@
 \alias{batPlotR}
 \title{batPlotR}
 \usage{
-batPlotR(shiny_options = list(shiny.maxRequestSize = 100 * 1024^2,
-  launch.browser = TRUE))
+batPlotR(option.list = list(shiny.launch.browser = TRUE, shiny.maxRequestSize
+  = 100 * 1024^2))
 }
 \arguments{
-\item{shiny_options}{a list of options passed to shinyApp}
+\item{option.list}{a list of global shiny options}
 }
 \value{
 launches a WebApp

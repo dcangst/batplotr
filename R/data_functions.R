@@ -207,5 +207,6 @@ sumBatscopeData <- function(
   data_binned$ProjectName <- factor(data_binned$ProjectName)
   data_binned$species <- factor(data_binned$species)
 
+  data_binned$bin_length <- bin_length
   return(data_binned)
 }

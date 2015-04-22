@@ -38,12 +38,14 @@ nightPlot <- function(plotData,
     y_limits <- c(0,max(plotData_sub$n_events))
   }
 
-  plottitle <- paste("Aktivitaet (# Sequencen)",str_c(format(day,format="%d.%m.%Y"),collapse=" - "))
-  bin_width <- as.integer(plotData$bins[2]-plotData$bins[1])*60
+  plottitle <- paste("Aktivitaet (# Sequencen)",
+    str_c(format(day,format="%d.%m.%Y"),collapse=" - "))
+
+  bin_width <- plotData$bin_length[1]*60
 
   nightPlot <- ggplot(plotData_sub,aes(bins,n_events,fill=species))+
     facet_wrap(~ProjectName, ncol = 2)+
-    geom_bar(stat="identity",position="dodge",width=300)+
+    geom_bar(stat="identity",position="dodge",width=bin_width)+
     geom_vline(aes(xintercept=as.numeric(sunset)),
       colour="orange")+
     geom_vline(aes(xintercept=as.numeric(sunrise)),
@@ -51,7 +53,7 @@ nightPlot <- function(plotData,
     scale_x_datetime(limits=x_limits, breaks=date_breaks("2 hour"),
       minor_breaks=date_breaks("1 hour"),
       labels = date_format("%H:%M"))+
-    scale_y_continuous(limits=y_limits,breaks=seq(0,max(y_limits),2))+
+    scale_y_continuous(limits=y_limits)+
     labs(x="Uhrzeit",y="Aktivitaet (# Events)",title=plottitle)
 
   return(nightPlot)

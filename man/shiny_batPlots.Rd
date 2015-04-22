@@ -16,4 +16,7 @@ launches a WebApp
 \description{
 launches an interactive web app
 }
+\seealso{
+Other interactive functions: \code{\link{textInput}}
+}
 

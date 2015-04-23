@@ -1,0 +1,369 @@
+---
+title: batplotR - BatScope Datenvisualisation with R
+output:
+  html_document:
+    theme: united
+    highlight: tango
+    toc: true
+    toc_depth: 4
+    fig_caption: true
+    css: knitrcss.css
+---
+
+## Über `batplotR`
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8,
+                      echo=TRUE, warning=TRUE, message=TRUE)
+knitr::knit_hooks$set(plot = function(x, options) {
+    paste("<figure><img src=\"", knitr::opts_knit$get("base.url"), paste(x, collapse = "."), 
+        "\"><figcaption>", options$fig.cap, "</figcaption></figure>", sep = "")
+})
+```
+
+`batplotR` ist eine R Package die im Rahmen eines Zivildiensteinsatzes entwickelt wurde. Sie wurde für die Darstellung von mit [BatScope](http://www.wsl.ch/dienstleistungen/produkte/software/batscope/index_DE) ausgewerteten Bioakustikdaten entwickelt und erlaubt es kurze (d.h. über  eine Nacht) und lange (d.h. mehrere Nächte) Beobachtungsreihen darzustellen. Ausgangspunkt ist in jedem Fall ein `.xlsx`-Exportfile von Batscope ( getestet , mit BatScope v.3.1.6)
+    
+Die Package ist GPL-3 lizenziert und auf [GitHub gehostet](https://github.com/dcangst/batplotr), kann also beliebig geforkt, weitergegeben und  verändert  werden.
+
+Die folgenden Befehle sind auch als R Dokument (`batplotr_anleitung.R`) zusammengefasst auf der Dropbox!
+
+## Installation
+
+`batplotR` kann direkt von GitHub installiert werden, Voraussetzung ist die Package [`devtools`](https://github.com/hadley/devtools) die über CRAN erhältlich ist und wie folgt installiert werden kann:
+
+```{r install_devtools, eval=FALSE}
+install.packages(c("devtools"),dependencies=TRUE)
+```
+danach kann batplotR direkt von GitHub installiert werden (es werden auch verschiedene andere Packages installiert, die von batplotR benötigt werden):
+
+```{r install batplotr 1, eval=FALSE}
+devtools::install_github("dcangst/batplotr",dependencies=TRUE)
+```
+
+## Benutzung
+
+mit `batplotR` visualisieren Sie ihre BatScope-Projekte in _3 einfachen Schritten!_
+
+1. Daten laden!
+2. Daten zusammenfassen!
+3. Daten visualizieren!
+
+et voila!
+
+### Laden der Package
+
+Zuerst wird die Package geladen und das Arbeitsverzeichniss[^1] gesetzt. 
+
+```{r load, eval=FALSE}
+library(batplotr)
+setwd("/Users/daniel/Dropbox/Bioakustik Austausch Manu Daniel")
+```
+```{r, echo=FALSE}
+library(batplotr)
+setwd("/Users/daniel/Dropbox/Bioakustik Austausch Manu Daniel")
+```
+
+[^1]: Das Arbeitsverzeichniss in `R` ist das Standardverzeichnis relativ zu dem R alle angegebenen Pfad- und Dateinamen interpretiert. Hier werden z.B. Dateien gespeichert, wenn man nicht einen kompletten Pfad angibt.
+
+### Laden der BatScope Daten
+
+jetzt können die Daten eingelesen werden. Dafür wird der Befel `readBatscopeXLSX` verwendet.
+
+```{r Daten laden, cache=TRUE}
+daten <- readBatscopeXLSX(
+  species_col_name = "AutoClass1",
+  quality_col_name = "AutoClass1Qual",
+  quality_threshold  = 0.8
+  )
+```
+Der Befehl ruft ein 'Datei öffnen...' Dialog auf bei dem das `.xlsx`-file vom BatScope export ausgewählt werden muss. Ausserdem werden noch die folgenden Parameter benötigt:
+
+----------------------------------------------------------------
+Parameter          Was?                    Standardwert
+-----------------  ----------------------  ---------------------
+path               Pfad zum `.xlsx` -file   file.choose()[^2]
+
+species_col_name   Spaltenname Spezies     `"AutoClass1"`
+
+quality_col_name   Spaltenname Qualität    `"AutoClass1Qual"`
+
+quality_threshold  minimale Qualität der   `0.8`
+                   Spezieszuordnung
+----------------------------------------------------------------
+
+Table: Tabelle 1: Parameter der Funktion `readBatscopeXLSX`
+
+[^2]: zeigt einen 'Datei öffnen...'-Dialog an
+
+(*Mit R 3.1.3 wird ein Fehler in der Konsole ausgeworfen. Dieser kann ignoriert werden*)
+
+Die eingelesenen Daten werden unter dem Namen `daten` abgelegt (mit Hilfe der Zuweisung `<-`). Wie der Tabelle zu entnehmen ist, hätten in diesem Fall die Daten auch mit `readBatscopeXLSX()` alleine eingelesen werden können, da alle Standardwerte verwendet wurden.
+
+Es empfiehlt sich den Import mit der Funktion `str(daten)` oder `head(daten)`anzuschauen. Als nächstes werden die Daten nach Standorten und Tagen in kurze Zeitabschnitte zusammengefasst (sogenanntes 'binning').
+
+### Zusammenfassung der Daten
+
+Um die Daten zu visualisieren werden die einzelnen Sequenzen in kurzen Zeitabschnitten zusammengefasst. Die Länge dieser Zeitabschnitte kann vom Benutzer eingestellt werden. Ausserdem werden hier die Zeiten des Sonnenauf und -untergangs berechnet (nach Algorithmen der NOAA). Bei grossen Datensätzen kann dieser Befehl eine kleine Weile dauern.
+
+Für die Zusammenfassung wird der Befehl `sumBatscopeData` ausgeführt:
+
+```{r Daten zusammenfassen print, eval=FALSE}
+  daten_sum <- sumBatscopeData(
+    daten,
+    bin_length=5,
+    progress="text"
+    )
+```
+```{r Daten zusammenfassen, echo=FALSE,cache=TRUE}
+  daten_sum <- sumBatscopeData(
+    daten,
+    bin_length=5,
+    progress="none"
+    )
+```
+Der Befehl benötigt die folgenden Parameter:
+
+----------------------------------------------------------------------------
+Parameter          Was?                                Standardwert
+-----------------  ---------------------------------   ---------------------
+data_r             `data.frame` generiert mit          -
+                   `readBatscopeXLSX' 
+
+bin_width          Zeitspanne in min über die          `5`
+                   zusammengefasst wird
+                   (binning)
+
+lat                Breitengrad (N-S in Decimalgrad)    `NULL`
+                    der Station. Wenn `NULL`
+                   werden die GPS Koordinaten des
+                   BatLoggers verwendet
+
+long               Längengrad (O-W in Decimalgrad)     `NULL`
+                    der Station. Wenn `NULL`
+                   werden die GPS Koordinaten des
+                   BatLoggers verwendet
+
+progress           Art der Fortschrittssanzeige.        `"text"`
+                   `"none"` für keine.
+----------------------------------------------------------------------------
+
+Table: Tabelle 2: Parameter der Funktion `sumBatscopeData`
+
+Die eingelesenen Daten werden unter dem Namen `daten_sum` als data.frame abgelegt (mithilfe der Zuweisung `<-`). Wie der Tabelle zu entnehmen ist, hätten in diesem Fall die Daten auch mit `sumBatscopeData(daten)` alleine eingelesen werden können, da alle Standardwerte verwendet wurden. Mit `str(daten_sum)` erhält man einen kurzen Überblick über die Daten
+
+```{r daten inspizieren}
+str(daten_sum)
+```
+
+Mit den Daten kann natürlich mit den vielen Tools von R weitergearbeitet werden. Im folgenden ein Beispiel das die Package [`plyr`](http://plyr.had.co.nz) benützt um die Summe von Events (d.h. Anzahl Sequenzen) an den verschiedenen Standorten pro Tag auszurechnen (aus Platzgründen werden hier nur die ersten 6 Zeilen angezeigt)
+
+```{r ddply, eval=FALSE}
+  ddply(daten_sum,.(ProjectName,SurveyDate),summarize,n_events_day=sum(n_events))
+```
+```{r ddply beispiel, echo=FALSE}
+  head(ddply(daten_sum,.(ProjectName,SurveyDate),summarize,n_events_day=sum(n_events)))
+```
+
+### Plotten der Daten
+
+Das Objekt `daten_sum`, generiert mit `sumBatscopeData`, kann jetzt auch mit den beiden Plotfunktionen `nightPlot` und `periodPlot` verwendet werden.
+
+#### nightPlot
+
+Die Funktion `nightPlot` generiert ein [ggplot](http://ggplot2.org) Objekt und hat folgende Parameter:
+
+----------------------------------------------------------------------------
+Parameter          Was?                                Standardwert
+-----------------  ---------------------------------   ---------------------
+plotData           `data.frame` generiert mit          -
+                   `sumBatscopeData' 
+
+day                Tag(e) die geplottet werden         erster Tag im
+                                                       Datensatz
+
+sel_species        Name der Spezies oder Namen von     `"every"`
+                   mehreren Spezies als Vector oder
+                   `"every"` für alle Spezies
+                   einzeln oder `"all"` für die
+                   Summe aller Spezies
+
+x_limits           höchster und tiefster Wert der      `NULL`
+                   x-Achse (ein Vector im POSIXct
+                   Format), `NULL` für automatisch 
+                   (halbe Stunde vor Sonnenuntergang
+                   bis halbe Stunde nach 
+                   Sonnenuntergang)
+
+y_limits           höchster und tiefster Wert der      `NULL`
+                   y-Achse (ein numerischer Vector),
+                   `NULL` für automatisch
+                   
+plot_T             soll der Temperaturverlauf          `FALSE`
+                   geplottet werden? TRUE / FALSE
+
+...                weitere Parameter,
+                   siehe `?nightPlot` für Details                   
+----------------------------------------------------------------------------
+
+Table: Tabelle 3: Parameter der Funktion `nightPlot`
+
+Die Standardwerte generieren in der Regel einen guten ersten Eindruck der Daten:
+
+```{r nightPlot1, fig.cap="Figure 1: Beispiel eines `nightPlots`",cache=TRUE}
+nightPlot(daten_sum)
+```
+Im folgenden einige Beispiele für die verschiedenen Optionen:
+
+* __Datumsauswahl__
+
+    mit dem R-Befehl `unique` können zunächst mal die Daten angezeigt werden, die im Datensatz vorhanden sind. Danach kann eines der Daten als Argument an `nightPlot` übergeben werden:
+
+    ```{r Datumsauswahl1,eval=FALSE}
+    unique(daten_sum$SurveyDate)
+    nightPlot(daten_sum,day="2014-07-24")
+    ```
+
+    da `unique(daten_sum$Survey)` ein Vector zurückgibt kann ein Element davon auch gleich an `nightPlot` übergeben werden:
+
+    ```{r Datumsauswahl2, eval=FALSE}
+    nightPlot(daten_sum,day=unique(daten_sum$SurveyDate)[24])
+    ```
+
+    es können auch mehrere Tage angegeben werden (sollten aufeinanderfolgend sein):
+
+    ```{r Datumsauswahl3, eval=FALSE}
+    nightPlot(daten_sum,day=c("2014-08-23","2014-08-24"))
+    ```
+
+* __Auswahl einer/mehrerer Spezies__
+
+    ähnlich wie die Daten können auch die Spezies ausgewählt werden.
+
+    ```{r Speziesauswahl1, eval=FALSE}
+    nightPlot(daten_sum,"2014-07-24",sel_species="Pipistrellus nathusii")
+    nightPlot(daten_sum,"2014-07-24",sel_species=unique(daten_sum$species)[3])
+    ```
+    
+    Es können auch mehrere Spezies ausgewählt werden:
+
+    ```{r Speziesauswahl2, eval=FALSE}
+    nightPlot(daten_sum,day="2014-07-24",sel_species=c("Pipistrellus nathusii","Pipistrellus kuhlii"))
+    nightPlot(daten_sum,day="2014-07-24",sel_species=unique(daten_sum$species)[3:4])
+    ```
+
+* __Darstellung von nur einem Standort__
+    
+    Um nur einen der Standorte im Datensatz anzuzeigen müssen zuerst die Daten eingschränkt werden:
+
+    ```{r Standortauswahl1, eval=FALSE}
+    unique(daten_sum$ProjectName)    
+    daten_sum_StO1 <- subset(daten_sum,ProjectName=="PT 2014 Waidberg")
+    # oder direkt:
+    daten_sum_StO1 <- subset(daten_sum,ProjectName==unique(daten_sum$ProjectName)[4])
+    nightPlot(daten_sum_StO1, day="2014-07-24")
+    ```
+
+* __x_limits & y_limits__
+    
+    um die Achsen anzupassen werden die Werte `x_limits` & `y_limits` gesetzt:
+
+    ```{r Achsen, eval=FALSE}
+    nightPlot(daten_sum_StO1, day=c("2014-08-23","2014-08-24"), x_limits=as.POSIXct(c("2014-08-23 16:00","2014-08-25 10:00")), y_limits=c(0,12))
+    ```
+
+Ein Beispiel mit vielen Optionen:
+
+```{r nightPlot Beispiel, fig.cap="Figure 2: Beispiel eines `nightPlots` mit vielen Optionen",cache=TRUE}
+    daten_sum_StO1 <- subset(daten_sum,ProjectName==unique(daten_sum$ProjectName)[4])
+    nightPlot(daten_sum, day=c("2014-08-23","2014-08-24"),sel_species=unique(daten_sum_StO1$species)[c(1,2,4)], x_limits=as.POSIXct(c("2014-08-23 16:00","2014-08-25 10:00")), y_limits=c(0,12),plot_T=FALSE)
+```
+
+#### periodPlot
+
+Die Funktion `periodPlot` generiert ein [ggplot](http://ggplot2.org) Objekt und hat folgende Parameter und funktioniert im wesentlichen ähnlich wie `nightPlot`
+
+----------------------------------------------------------------------------
+Parameter          Was?                                Standardwerte
+-----------------  ---------------------------------   ---------------------
+plotData           `data.frame` generiert mit          -
+                   `sumBatscopeData' 
+
+start_date         Beginn der Zeitperiode              Anfang des Jahres des
+                                                       ersten Datensatzes
+
+end_date           Beginn der Zeitperiode              Ende des Jahres des
+                                                       letzten Datensatzes
+
+sel_species        Name der Spezies oder Namen von     `"every"`
+                   mehreren Spezies als Vektor oder
+                   `"every"` für alle Spezies
+                   einzeln oder `"all"` für die
+                   Summe aller Spezies
+
+x_limits           höchster und tiefster Wert der      `NULL`
+                   x-Achse (ein Vektor im POSIXct
+                   Format), `NULL` für automatisch
+                   (= start_date - end_date) 
+
+y_limits           höchster und tiefster Wert der      `NULL`
+                   y-Achse (ein Charakter oder
+                   POSIXct Vektor) mit Datum
+                   1900-01-01 (abends) oder
+                   1900-01-02 (morgens). `NULL`
+                   für automatisch.
+----------------------------------------------------------------------------
+
+Table: Tabelle 4: Parameter der Funktion `periodPlot`
+
+Beispiel mit Standardwerten:
+
+```{r periodPlot1, fig.cap="Figure 3: Beispiel eines `periodPlots`",cache=TRUE}
+periodPlot(daten_sum)
+```
+
+Die generierten Warnmeldungen hängen damit zusammen, das nicht für alle Tage alle Daten vorhanden sind. 
+
+`periodPlot`-Beispiel mit einigen Optionen. Man beachte auch, das der Plot hier zuerst als `ggplot` Objekt abgelegt wird und dann erst dargestellt wird.
+
+```{r periodPlot2, fig.cap="Figure 4: Beispiel eines `periodPlots` mit einigen Optionen",cache=TRUE}
+plot1 <- periodPlot(daten_sum,start_date="2014-03-01",end_date="2014-11-01",sel_species=unique(daten_sum$species)[3:5],y_limits=c("1900-01-01 17:30","1900-01-02 08:30"))
+```
+
+Die effektiv dargestellten Daten können dann dem generierten `ggplot` Objekt entnommen werden:
+
+```{r plotdaten beispiel}
+head(plot1$data)
+```
+
+## Weitere Scripts
+
+### `batplotr_anleitung.R`
+
+enthält die hier besprochenen Befehle in einer einfachen .R Datei .
+
+### `Auswertung_PrimeTower.R`
+
+ein Beispiel für die Benutzung der Package (im Prinzip ähnlich wie `batplotr_anleitung.R`)
+
+### `Analyse_BatLoggerLogfiles.R`
+
+Script für die Analyse von vielen BatLogger Log-Files. Für Fortgeschrittene. Und dauert lange. Es empfiehlt sich die Daten bereits beim Import in BatScope zu sortieren 
+
+### `Einlesen_SMAfiles.R`
+
+... ist irgendwie kaputt gegangen...
+
+## Hilfe
+
+Die Package sowie alle Funktionen haben eine Hilfeseite die mit dem R-Befehl `?` abgerufen werden kann, e.g.:
+
+```{r hilfe, eval=FALSE}
+?batplotr
+?nightlot
+```
+
+## Entwicklung
+
+Die Package wurde in R 3.1.2 getestet und der Quellcode ist auf [github](https://github.com/dcangst/batplotr) hinterlegt. Die Package kann also frei weiterentwickelt werden!
+
+********************

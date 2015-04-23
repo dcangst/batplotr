@@ -21,7 +21,7 @@ knitr::knit_hooks$set(plot = function(x, options) {
 })
 ```
 
-`batplotR` ist eine R Package die im Rahmen eines Zivildiensteinsatzes entwickelt wurde. Sie wurde für die Darstellung von mit [BatScope](http://www.wsl.ch/dienstleistungen/produkte/software/batscope/index_DE) ausgewerteten Bioakustikdaten entwickelt und erlaubt es kurze (d.h. über  eine Nacht) und lange (d.h. mehrere Nächte) Beobachtungsreihen darzustellen. Ausgangspunkt ist in jedem Fall ein `.xlsx`-Exportfile von Batscope ( getestet , mit BatScope v.3.1.6)
+`batplotR` ist eine R Package die im Rahmen eines Zivildiensteinsatzes bei der [Stiftung Fledermausschutz Schweiz](http://www.fledermausschutz.ch) entwickelt wurde. Sie wurde für die Darstellung von mit [BatScope](http://www.wsl.ch/dienstleistungen/produkte/software/batscope/index_DE) ausgewerteten Bioakustikdaten entwickelt und erlaubt es kurze (d.h. über  eine Nacht) und lange (d.h. mehrere Nächte) Beobachtungsreihen darzustellen. Ausgangspunkt ist in jedem Fall ein `.xlsx`-Exportfile von Batscope ( getestet , mit BatScope v.3.1.6)
     
 Die Package ist GPL-3 lizenziert und auf [GitHub gehostet](https://github.com/dcangst/batplotr), kann also beliebig geforkt, weitergegeben und  verändert  werden.
 
@@ -275,7 +275,7 @@ Ein Beispiel mit vielen Optionen:
 
 ```{r nightPlot Beispiel, fig.cap="Figure 2: Beispiel eines `nightPlots` mit vielen Optionen",cache=TRUE}
     daten_sum_StO1 <- subset(daten_sum,ProjectName==unique(daten_sum$ProjectName)[4])
-    nightPlot(daten_sum, day=c("2014-08-23","2014-08-24"),sel_species=unique(daten_sum_StO1$species)[c(1,2,4)], x_limits=as.POSIXct(c("2014-08-23 16:00","2014-08-25 10:00")), y_limits=c(0,12),plot_T=FALSE)
+    nightPlot(daten_sum_StO1, day=c("2014-08-23","2014-08-24"),sel_species=unique(daten_sum_StO1$species)[c(1,2,4)], x_limits=as.POSIXct(c("2014-08-23 16:00","2014-08-25 10:00")), y_limits=c(0,12),plot_T=TRUE)
 ```
 
 #### periodPlot
@@ -348,10 +348,6 @@ ein Beispiel für die Benutzung der Package (im Prinzip ähnlich wie `batplotr_a
 ### `Analyse_BatLoggerLogfiles.R`
 
 Script für die Analyse von vielen BatLogger Log-Files. Für Fortgeschrittene. Und dauert lange. Es empfiehlt sich die Daten bereits beim Import in BatScope zu sortieren 
-
-### `Einlesen_SMAfiles.R`
-
-... ist irgendwie kaputt gegangen...
 
 ## Hilfe
 

@@ -29,7 +29,8 @@ shiny_batPlots <- function(
                  tags$style(type="text/css", ".jslider { max-width: 200px; }"),
                  tags$style(type='text/css', ".well { max-width: 310px; }"),
                  tags$style(type='text/css', ".span4 { max-width: 310px; }"),
-                 tags$style(type='text/css', ".control-label {  font-weight: normal; }")
+                 tags$style(type='text/css', ".control-label { font-weight: normal; }"),
+                 tags$style(type='text/css', "label { font-weight: normal; }")
           ),
           
           fileInput('file1', 'BatScope xlsx auswählen',
@@ -48,14 +49,17 @@ shiny_batPlots <- function(
           checkboxInput("customScaleX", label = tags$b("Eigene Stundenachse"), value = FALSE),
           p("Stundenachse Start"),
           sliderInput("hourAxis1",label=NULL, min = 0.0, 
-            max = 24.0, value = 16.0,step=0.5),
+            max = 24.0, value = 16.0,step=0.5
+          ),
           p("Stundenachse Ende"),
           sliderInput("hourAxis2", label = NULL, min = 0.0, 
-            max = 24.0, value = 10.0,step=0.5),
+            max = 24.0, value = 10.0,step=0.5
+          ),
 
           checkboxInput("customScaleY", label = tags$b("Eigene Y-Achse (nur NightPlot)") , value = FALSE),
           sliderInput("yAxis", label = NULL, min = -10, 
-            max = 100, value = c(0,20),step=0.5),
+            max = 100, value = c(0,20),step=0.5
+          ),
 
           div(id="linkToSummary",tags$a("Mehr Optionen")),
           HTML("<script>$('#linkToSummary').click(function() {
@@ -78,17 +82,29 @@ shiny_batPlots <- function(
         ,width=3),#sidebarpanel
         
         # Show a tabset that includes a plot, summary, and table view
-        # of data
+        # of data downloadNightPlot
         mainPanel(
           tabsetPanel(type = "tabs",id="tabs", 
-            tabPanel("NightPlot", plotOutput("nightPlot",height = "600px")), 
-            tabPanel("PeriodPlot", plotOutput("periodPlot",height = "600px")), 
+            tabPanel("NightPlot", plotOutput("nightPlot",height = "650px"),
+              div(style="display:inline-block",textInput('save_name_night',label=NULL,
+                value=paste0(format(Sys.Date(),"%Y%m%d"),"_nightplot.pdf"))),
+              div(style="display:inline-block",downloadButton('downloadNightPlot', 'Plot speichern (PDF)'))
+            ), 
+            tabPanel("PeriodPlot", plotOutput("periodPlot",height = "650px"),
+              div(style="display:inline-block",textInput('save_name_period',label=NULL,
+                value=paste0(format(Sys.Date(),"%Y%m%d"),"_periodplot.pdf"))),
+              div(style="display:inline-block",downloadButton('downloadPeriodPlot', 'Plot speichern (PDF)'))
+            ),
             tabPanel("Zusammenfassung",
-              dataTableOutput("sum_table"),
+              div(dataTableOutput("sum_table"),style = "font-size:90%"),
+              div(style="display:inline-block",textInput('save_name_sum',label=NULL,
+                value=paste0(format(Sys.Date(),"%Y%m%d"),"_Zusammenfassung.xlsx"))),
               downloadButton('downloadSum', 'Zusammenfassung Download')
               ),
             tabPanel("Daten",
-              dataTableOutput("data_table"),
+              div(dataTableOutput("data_table"),style = "font-size:90%"),
+              div(style="display:inline-block",textInput('save_name_data',label=NULL,
+                value=paste0(format(Sys.Date(),"%Y%m%d"),"_data.xlsx"))),
               downloadButton('downloadData', 'Daten Download')),
             tabPanel("Optionen",id="optsPanel",
               fluidRow(
@@ -116,11 +132,9 @@ shiny_batPlots <- function(
                 ),
                 column(4,
                   tags$h4("GPS-Daten Optionen"),
-                  checkboxInput("customCoord", label = "Koordinaten (in Dezimalgrad)" , value = FALSE),
-                  p("Breite"),
-                  numericInput("lat", label = NULL, value =  47.4),
-                  p("Länge"),
-                  numericInput("long", label = NULL, value =  8.52)
+                  checkboxInput("customCoord", label = "eigene Koordinaten (in Dezimalgrad)" , value = FALSE),
+                  numericInput("lat", label = "Breite", value =  47.4,step=0.1),
+                  numericInput("long", label = "Länge", value =  8.52,step=0.1)
                 ),
                 column(4,
                   tags$h4("Generelle Plotoptionen"),
@@ -133,12 +147,19 @@ shiny_batPlots <- function(
                   checkboxInput("plotTemp", label = "Temperaturverlauf anzeigen" , value = FALSE),
                   selectizeInput("plot_T_color", label = "Farbe Temperaturkurve",
                     choices = colors(distinct = TRUE),
-                    selected = "black"),
+                    selected = "red"),
                   sliderInput("n_ybreaks", 
                     "Anzahl Ticks auf der y-Achse", 
                     value = 5,
                     min = 1,
-                    max = 120)
+                    max = 120),
+                  tags$h4("Speicher-Optionen"),
+                  numericInput("save_width","Breite", min = 1, 
+                    max = NA, value = 19,step=NA),
+                  numericInput("save_heigth","Höhe", min = 1, 
+                    max = NA, value = 10,step=NA),
+                  numericInput("save_text_size","Textgrösse für PDF", min = 1, 
+                    max = NA, value = 8,step=NA)
                 )
               )
             )  
@@ -202,7 +223,6 @@ shiny_batPlots <- function(
               end = format(max(dataInput()$SurveyDate),"%Y-%m-%d")
             )
           }
-
           #update yAxis Input
           updateSliderInput(session, "yAxis", 
             max = round_any((max(data_r()$n_events,na.rm=TRUE))*1.4,50,f=ceiling))
@@ -268,15 +288,15 @@ shiny_batPlots <- function(
         validate(
           need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
-        data_r()
-      }) #output$data_table
+        data_r()[,c(1,2,8,3,5,6,7,11,12)]
+      }, options = list(lengthMenu = c(10,25,50,100), pageLength = 10)) #output$data_table
 
       output$sum_table <- renderDataTable({
         validate(
           need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
         data_sum()
-      }) #output$sum_table
+      }, options = list(lengthMenu = c(10,25,50,100), pageLength = 10)) #output$sum_table
     
       shiny_nightPlot <- reactive({
 
@@ -310,14 +330,14 @@ shiny_batPlots <- function(
           plot_T_color=input$plot_T_color,
           n_ybreaks=input$n_ybreaks,
           text_size=input$text_size)
-    
-      }) #nightPlot
+
+      }) #shiny_nightPlot
       
       output$nightPlot <- renderPlot({
         shiny_nightPlot()
       })
 
-      output$periodPlot <- renderPlot({
+      shiny_periodPlot <- reactive({
 
         if(input$customScaleX){
           hhmm1 <- str_c(c(floor(input$hourAxis1),
@@ -337,19 +357,42 @@ shiny_batPlots <- function(
           sel_species=input$species,
           y_limits=ylim,
           text_size=input$text_size)
-      }) #output$periodPlot
+      }) #shiny_periodPlot
+
+      output$periodPlot <- renderPlot({
+        shiny_periodPlot()
+      })
+
 
       output$downloadSum <- downloadHandler(
-        filename = function() {"Zusammenfassung.xlsx"},
+        filename = function() {input$save_name_sum},
         content = function(file) {
           write.xlsx(data_sum(), file)
         }
       )
 
       output$downloadData <- downloadHandler(
-        filename = function() {"Daten.xlsx"},
+        filename = function() {input$save_name_data},
         content = function(file) {
           write.xlsx(data_r(), file)
+        }
+      )
+
+      output$downloadNightPlot <-  downloadHandler(
+        filename = input$save_name_night,
+        content = function(file) {
+          device <- function(..., width, height) grDevices::pdf(..., width = width, height = height,pointsize=1)
+          output_plot <- shiny_nightPlot()+theme(text=element_text(size=input$save_text_size))
+          ggsave(file, plot = output_plot, device = device, width=input$save_width/2.54, height=input$save_heigth/2.54, scale=1,dpi=72)
+        }
+      )
+
+      output$downloadPeriodPlot <-  downloadHandler(
+        filename = input$save_name_period,
+        content = function(file) {
+          device <- function(..., width, height) grDevices::pdf(..., width = width, height = height,pointsize=1)
+          output_plot <- shiny_periodPlot()+theme(text=element_text(size=input$save_text_size))
+          ggsave(file, plot = output_plot, device = device, width=input$save_width/2.54, height=input$save_heigth/2.54, scale=1,dpi=72)
         }
       )
     }

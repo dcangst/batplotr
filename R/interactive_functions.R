@@ -154,9 +154,9 @@ shiny_batPlots <- function(
                     min = 1,
                     max = 120),
                   tags$h4("Speicher-Optionen"),
-                  numericInput("save_width","Breite", min = 1, 
+                  numericInput("save_width","Breite [cm]", min = 1, 
                     max = NA, value = 19,step=NA),
-                  numericInput("save_heigth","Höhe", min = 1, 
+                  numericInput("save_heigth","Höhe [cm]", min = 1, 
                     max = NA, value = 10,step=NA),
                   numericInput("save_text_size","Textgrösse für PDF", min = 1, 
                     max = NA, value = 8,step=NA)

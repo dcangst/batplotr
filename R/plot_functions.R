@@ -10,7 +10,9 @@
 #' @param x_limits x-axis limits, NULL (default) or a POSIXct vector of length 2 
 #' @param y_limits y-axis limits, NULL (default) or a numeric vector of length 2
 #' @param plot_T logical, should Temperature be plotted?
+#' @param plot_T_color r color string, see \code{\link{colors}}
 #' @param n_ybreaks roughly how many tickmarks are plotted on the y-Axis
+#' @param text_size base text size
 #' @return a \code{ggplot} object
 #' @family plot functions
 #' @export
@@ -20,7 +22,9 @@ nightPlot <- function(plotData,
   x_limits=NULL,
   y_limits=NULL,
   plot_T=FALSE,
-  n_ybreaks=5){
+  plot_T_color="black",
+  n_ybreaks=5,
+  text_size=16){
 
   if(is.POSIXct(day)==FALSE){
     day <- as.POSIXct(day,format="%Y-%m-%d")
@@ -59,13 +63,16 @@ nightPlot <- function(plotData,
     scale_x_datetime(limits=x_limits, breaks=date_breaks("2 hour"),
       minor_breaks=date_breaks("1 hour"),
       labels = date_format("%H:%M"))+
+    scale_fill_brewer(name="Spezies",palette="Set1")+
     scale_y_continuous(limits=y_limits,breaks=trans_breaks("identity", function(x) x, n=n_ybreaks))+
-    labs(x="Uhrzeit",y="Aktivität (# Sequencen) | Temperatur °C",title=plottitle)
+    labs(x="Uhrzeit",y="Aktivität (# Sequencen)",title=plottitle)+
+    theme(text=element_text(size=text_size))
 
   if(plot_T){
     nightPlot <- nightPlot+
       geom_line(aes(bins,meanT_BL,group=ProjectName,colour=t))+
-      scale_color_discrete(name="")
+      scale_color_manual(name="",values = plot_T_color)+
+      labs(x="Uhrzeit",y="Aktivität (# Sequencen) | Temperatur °C",title=plottitle)
   }
 
   return(nightPlot)
@@ -86,7 +93,7 @@ nightPlot <- function(plotData,
 #' @param y_limits y-axis limits, NULL (default) or a character or POSIXct 
 #'   vector of length 2 with format
 #'   \code{c("1900-01-01 HH:MM","1900-01-02 HH:MM")}
-#' @param plotTitle character, title for plot. \code{NULL} for default title. 
+#' @param text_size base text size 
 #' @return a \code{ggplot} object
 #' @family plot functions
 #' @export
@@ -95,7 +102,8 @@ periodPlot <- function(plotData,
   end_date=ceiling_date(max(plotData$SurveyDate),"year"),
   sel_species="every",
   x_limits=NULL,
-  y_limits=NULL){
+  y_limits=NULL,
+  text_size=16){
 
   if(is.POSIXct(start_date)==FALSE){
     start_date <- as.POSIXct(start_date,format="%Y-%m-%d")
@@ -164,7 +172,8 @@ periodPlot <- function(plotData,
     scale_y_datetime(limits=y_limits,breaks=date_breaks("2 hour"),
       minor_breaks=date_breaks("1 hour"),
       labels = date_format("%H:%M"))+
-    labs(x="Datum",y="Uhrzeit [UTC+1]",title=plottitle)
+    labs(x="Datum",y="Uhrzeit [UTC+1]",title=plottitle)+
+    theme(text=element_text(size=text_size))
 
   if(sel_species[1]!="every" & length(sel_species)==1){
     periodPlot <- periodPlot+geom_point(aes(size=n_events),alpha=0.5,

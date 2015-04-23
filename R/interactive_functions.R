@@ -32,7 +32,7 @@ shiny_batPlots <- function(
                  tags$style(type='text/css', ".control-label {  font-weight: normal; }")
           ),
           
-          fileInput('file1', 'BatScope xlsx ausählen',
+          fileInput('file1', 'BatScope xlsx auswählen',
             accept=c('.xlsx', 
             '.xls')
           ),
@@ -83,12 +83,17 @@ shiny_batPlots <- function(
           tabsetPanel(type = "tabs",id="tabs", 
             tabPanel("NightPlot", plotOutput("nightPlot",height = "600px")), 
             tabPanel("PeriodPlot", plotOutput("periodPlot",height = "600px")), 
-            tabPanel("Zusammenfassung", dataTableOutput("sum_table")),
-            tabPanel("Daten", dataTableOutput("data_table")),
+            tabPanel("Zusammenfassung",
+              dataTableOutput("sum_table"),
+              downloadButton('downloadSum', 'Zusammenfassung Download')
+              ),
+            tabPanel("Daten",
+              dataTableOutput("data_table"),
+              downloadButton('downloadData', 'Daten Download')),
             tabPanel("Optionen",id="optsPanel",
               fluidRow(
                 column(4,
-
+                  tags$h4("Import/Datenverarbeitungsoptionen"),
                   sliderInput("qual", 
                     "Minimale Spezies Qualität", 
                     value = 0.8,
@@ -110,6 +115,7 @@ shiny_batPlots <- function(
                     max = 120)
                 ),
                 column(4,
+                  tags$h4("GPS-Daten Optionen"),
                   checkboxInput("customCoord", label = "Koordinaten (in Dezimalgrad)" , value = FALSE),
                   p("Breite"),
                   numericInput("lat", label = NULL, value =  47.4),
@@ -117,13 +123,22 @@ shiny_batPlots <- function(
                   numericInput("long", label = NULL, value =  8.52)
                 ),
                 column(4,
-                  tags$b("NightPlot Optionen"),
+                  tags$h4("Generelle Plotoptionen"),
+                  sliderInput("text_size", 
+                    "Textgrösse", 
+                    value = 16,
+                    min = 1,
+                    max = 32),
+                  tags$h4("NightPlot Optionen"),
+                  checkboxInput("plotTemp", label = "Temperaturverlauf anzeigen" , value = FALSE),
+                  selectizeInput("plot_T_color", label = "Farbe Temperaturkurve",
+                    choices = colors(distinct = TRUE),
+                    selected = "black"),
                   sliderInput("n_ybreaks", 
                     "Anzahl Ticks auf der y-Achse", 
                     value = 5,
                     min = 1,
-                    max = 120),
-                  checkboxInput("plotTemp", label = "Temperaturverlauf anzeigen" , value = FALSE)
+                    max = 120)
                 )
               )
             )  
@@ -149,7 +164,7 @@ shiny_batPlots <- function(
           )
 
           #update Speciesname
-          speciesNames <- levels(dataSummary()$species)
+          speciesNames <- levels(data_r()$species)
           names(speciesNames) <- speciesNames
           species_options <- as.list(speciesNames)
 
@@ -190,7 +205,7 @@ shiny_batPlots <- function(
 
           #update yAxis Input
           updateSliderInput(session, "yAxis", 
-            max = round_any((max(dataSummary()$n_events,na.rm=TRUE))*1.4,50,f=ceiling))
+            max = round_any((max(data_r()$n_events,na.rm=TRUE))*1.4,50,f=ceiling))
 
       }) #observehttps://courses.cs.washington.edu/courses/cse190m/12sp/cheat-sheets/php-regex-cheat-sheet.pdf
 
@@ -202,7 +217,7 @@ shiny_batPlots <- function(
         pathname <- gsub("//", "/",inFile$datapath)
         path <- file.copy(pathname,paste0(pathname,".xlsx"))
 
-        withProgress(message = paste(inFile$name,"wird eingelesen... (Geduld!)"), value = 0.1, {
+        withProgress(message = paste0(inFile$name," wird eingelesen... (Geduld!)"), value = 0.1, {
           data <- readBatscopeXLSX(
             path=paste0(pathname,".xlsx"),
             species_col_name = input$speciesColName,
@@ -214,7 +229,7 @@ shiny_batPlots <- function(
         return(data)
       }) #dataInput
     
-      dataSummary <- reactive({
+      data_r <- reactive({
         validate(
           need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
@@ -229,7 +244,7 @@ shiny_batPlots <- function(
         }
 
         withProgress(message = paste(inFile$name,"wird analysiert... (Geduld!)"), value = 0, {
-          daten_sum <- sumBatscopeData(
+          data_r <- sumBatscopeData(
             dataInput(),
             bin_length=input$bins,
             lat=c_lat,
@@ -239,27 +254,34 @@ shiny_batPlots <- function(
           )
           incProgress(1, detail = paste("Fertig!"))
         })
-        return(daten_sum)
-      }) #dataSummary
-    
+        return(data_r)
+      }) #data_r
+      
+      data_sum <- reactive({
+        validate(
+          need(is.null(data_r) != TRUE, "Bitte BatScope xlsx auswählen")
+        )
+        data_sum <- ddply(data_r(),.(ProjectName,SurveyDate),summarize,n_events_day=sum(n_events)) 
+      })
+
       output$data_table <- renderDataTable({
         validate(
           need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
-        dataSummary()
+        data_r()
       }) #output$data_table
 
       output$sum_table <- renderDataTable({
         validate(
           need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
-        ddply(dataSummary(),.(ProjectName,SurveyDate),summarize,n_events_day=sum(n_events))
+        data_sum()
       }) #output$sum_table
     
-      output$nightPlot <- renderPlot({
+      shiny_nightPlot <- reactive({
 
         validate(
-          need(as.character(input$dates[1]) %in% format(dataSummary()$SurveyDate,"%Y-%m-%d"),"Keine Datenpunkte für ausgewähltes Datum")
+          need(as.character(input$dates[1]) %in% format(data_r()$SurveyDate,"%Y-%m-%d"),"Keine Datenpunkte für ausgewähltes Datum")
         )
         if(input$customScaleX){
           hhmm1 <- str_c(c(floor(input$hourAxis1),
@@ -271,23 +293,29 @@ shiny_batPlots <- function(
         } else {
           xlim <- NULL
         }
-        print(xlim)
+
         if(input$customScaleY){
           ylim <- input$yAxis
         } else {
           ylim <- NULL
         }
-        print(ylim)
-        plotData <- subset(dataSummary(),ProjectName %in% input$project)
+
+        plotData <- subset(data_r(),ProjectName %in% input$project)
         nightPlot(plotData,
           day=as.character(input$dates),
           sel_species=input$species,
           x_limits = xlim,
           y_limits = ylim,
           plot_T=input$plotTemp,
-          n_ybreaks=input$n_ybreaks)
+          plot_T_color=input$plot_T_color,
+          n_ybreaks=input$n_ybreaks,
+          text_size=input$text_size)
     
-      }) #output$nightPlot
+      }) #nightPlot
+      
+      output$nightPlot <- renderPlot({
+        shiny_nightPlot()
+      })
 
       output$periodPlot <- renderPlot({
 
@@ -302,13 +330,28 @@ shiny_batPlots <- function(
           ylim <- NULL
         }
 
-        plotData <- subset(dataSummary(),ProjectName %in% input$project)
+        plotData <- subset(data_r(),ProjectName %in% input$project)
         periodPlot(plotData,
           start_date=as.character(input$dates[1]),
           end_date=as.character(input$dates[2]),
           sel_species=input$species,
-          y_limits=ylim)
+          y_limits=ylim,
+          text_size=input$text_size)
       }) #output$periodPlot
+
+      output$downloadSum <- downloadHandler(
+        filename = function() {"Zusammenfassung.xlsx"},
+        content = function(file) {
+          write.xlsx(data_sum(), file)
+        }
+      )
+
+      output$downloadData <- downloadHandler(
+        filename = function() {"Daten.xlsx"},
+        content = function(file) {
+          write.xlsx(data_r(), file)
+        }
+      )
     }
   )
 }

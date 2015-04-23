@@ -27,7 +27,7 @@ readBatscopeXLSX <- function(path=file.choose(),
     detectDates = FALSE, rows = NULL, cols = NULL)
   dateOrigin <- openxlsx::getDateOrigin(path)
   #str(rawdata)
-  if(shiny_progress){incProgress(0.6, detail = "Qualitaetspruefung...")}
+  if(shiny_progress){incProgress(0.6, detail = "Qualitätsprüfung...")}
 
   # MODIFY DATA for use in R
   data_r <- rawdata
@@ -171,7 +171,7 @@ sumBatscopeData <- function(
       long=mean(GPSLongitude[GPSValid=="yes"],na.rm=TRUE)
       )
     if(any(is.na(gps_coords))){
-      stop("GPS Koordinaten nicht fuer alle Stationen vorhanden.")
+      stop("GPS Koordinaten nicht für alle Stationen vorhanden.")
       stop("Bitte manuell eingeben.")
     } else {
       message("Koordinaten von Batlogger verwendet.")

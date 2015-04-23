@@ -8,7 +8,9 @@
 #' @param sel_species species name or vector of species to plot, use "every" to 
 #'   plot all species individually (differentiated by color)
 #' @param x_limits x-axis limits, NULL (default) or a POSIXct vector of length 2 
-#' @param y_limits y-axis limits, NULL (default) or a numeric vector of length 2 
+#' @param y_limits y-axis limits, NULL (default) or a numeric vector of length 2
+#' @param plot_T logical, should Temperature be plotted?
+#' @param n_ybreaks roughly how many tickmarks are plotted on the y-Axis
 #' @return a \code{ggplot} object
 #' @family plot functions
 #' @export
@@ -16,7 +18,9 @@ nightPlot <- function(plotData,
   day=min(plotData$SurveyDate),
   sel_species="every",
   x_limits=NULL,
-  y_limits=NULL){
+  y_limits=NULL,
+  plot_T=FALSE,
+  n_ybreaks=5){
 
   if(is.POSIXct(day)==FALSE){
     day <- as.POSIXct(day,format="%Y-%m-%d")
@@ -38,11 +42,13 @@ nightPlot <- function(plotData,
     y_limits <- c(0,max(plotData_sub$n_events))
   }
 
-  plottitle <- paste("Aktivitaet (# Sequencen)",
+  plottitle <- paste("Aktivität (# Sequenzen)",
     str_c(format(day,format="%d.%m.%Y"),collapse=" - "))
 
   bin_width <- plotData$bin_length[1]*60
 
+  plotData_sub$t <- "Temperatur [°C]"
+  
   nightPlot <- ggplot(plotData_sub,aes(bins,n_events,fill=species))+
     facet_wrap(~ProjectName, ncol = 2)+
     geom_bar(stat="identity",position="dodge",width=bin_width)+
@@ -53,8 +59,14 @@ nightPlot <- function(plotData,
     scale_x_datetime(limits=x_limits, breaks=date_breaks("2 hour"),
       minor_breaks=date_breaks("1 hour"),
       labels = date_format("%H:%M"))+
-    scale_y_continuous(limits=y_limits)+
-    labs(x="Uhrzeit",y="Aktivitaet (# Events)",title=plottitle)
+    scale_y_continuous(limits=y_limits,breaks=trans_breaks("identity", function(x) x, n=n_ybreaks))+
+    labs(x="Uhrzeit",y="Aktivität (# Sequencen) | Temperatur °C",title=plottitle)
+
+  if(plot_T){
+    nightPlot <- nightPlot+
+      geom_line(aes(bins,meanT_BL,group=ProjectName,colour=t))+
+      scale_color_discrete(name="")
+  }
 
   return(nightPlot)
   }
@@ -83,8 +95,7 @@ periodPlot <- function(plotData,
   end_date=ceiling_date(max(plotData$SurveyDate),"year"),
   sel_species="every",
   x_limits=NULL,
-  y_limits=NULL,
-  plotTitle=NULL){
+  y_limits=NULL){
 
   if(is.POSIXct(start_date)==FALSE){
     start_date <- as.POSIXct(start_date,format="%Y-%m-%d")
@@ -103,23 +114,19 @@ periodPlot <- function(plotData,
     plotData_sub <- subset(plotData,
       SurveyDate %within% new_interval(start_date, end_date) &
       species!="all")
-    plottitle <- paste("Tagesaktivitaet",format(start_date,format="%d.%m.%Y"),
+    plottitle <- paste("Tagesaktivität",format(start_date,format="%d.%m.%Y"),
       "bis",format(end_date,format="%d.%m.%Y"),"| Summe aller Spezies")
   } else {
     plotData_sub <- subset(plotData,
       SurveyDate %within% new_interval(start_date, end_date) & 
       species %in% sel_species)
     if(length(sel_species)==1){
-      plottitle <- paste("Tagesaktivitaet",format(start_date,format="%d.%m.%Y"),
+      plottitle <- paste("Tagesaktivität",format(start_date,format="%d.%m.%Y"),
         "bis",format(end_date,format="%d.%m.%Y"),"|",sel_species)
     } else {
-      plottitle <- paste("Tagesaktivitaet",format(start_date,format="%d.%m.%Y"),
+      plottitle <- paste("Tagesaktivität",format(start_date,format="%d.%m.%Y"),
         "bis",format(end_date,format="%d.%m.%Y"))
     }
-  }
-
-  if(!is.null(plotTitle)){
-    plottitle <- plotTitle
   }
 
   if(is.null(x_limits)){

@@ -14,7 +14,7 @@ shiny_batPlots <- function(
     onStart=function(options=option.list){options(options)},
     ui = shinyUI(fluidPage(
       # Application title
-      titlePanel("batplotR_interactive"),
+      titlePanel(paste("Interactive batplotr",packageVersion("batplotr"))),
       
       # Sidebar with controls to:
       # - upload file
@@ -28,33 +28,14 @@ shiny_batPlots <- function(
                  tags$style(type="text/css", "textarea { max-width: 185px; }"),
                  tags$style(type="text/css", ".jslider { max-width: 200px; }"),
                  tags$style(type='text/css', ".well { max-width: 310px; }"),
-                 tags$style(type='text/css', ".span4 { max-width: 310px; }")
+                 tags$style(type='text/css', ".span4 { max-width: 310px; }"),
+                 tags$style(type='text/css', ".control-label {  font-weight: normal; }")
           ),
           
-          fileInput('file1', 'Choose BatScope xlsx File',
+          fileInput('file1', 'BatScope xlsx ausählen',
             accept=c('.xlsx', 
             '.xls')
           ),
-          
-          selectizeInput("speciesColName", label = "Kolonnenname Spezies",
-            choices = "AutoClass1",
-            selected = "AutoClass1"),
-
-          selectizeInput("speciesQualName", label = "Kolonnenname Spezies Qualitaet",
-            choices = "AutoClass1Qual",
-            selected = "AutoClass1Qual"),
-          
-          sliderInput("qual", 
-                      "Minimale Spezies Qualitaet", 
-                       value = 0.8,
-                       min = 0, 
-                       max = 1),
-
-          sliderInput("bins", 
-                      "Laenge der bins", 
-                       value = 5,
-                       min = 1,
-                       max = 120),
 
           selectizeInput(
             'project', 'Standorte', choices = "?", multiple = TRUE
@@ -62,9 +43,9 @@ shiny_batPlots <- function(
           selectizeInput(
             'species', 'Species', choices = "?", multiple = TRUE
           ),
-          dateRangeInput("dates", label = "Date range"),
-          tags$b("Eigene Stundenachse"),
-          checkboxInput("customScaleX", label = "aktiv", value = FALSE),
+          dateRangeInput("dates", label = "Datumsbereich",language="de",separator="bis"),
+
+          checkboxInput("customScaleX", label = tags$b("Eigene Stundenachse"), value = FALSE),
           p("Stundenachse Start"),
           sliderInput("hourAxis1",label=NULL, min = 0.0, 
             max = 24.0, value = 16.0,step=0.5),
@@ -72,27 +53,71 @@ shiny_batPlots <- function(
           sliderInput("hourAxis2", label = NULL, min = 0.0, 
             max = 24.0, value = 10.0,step=0.5),
 
-          tags$b("Eigene Y-Achse (nur NightPlot)"),
-          checkboxInput("customScaleY", label = "aktiv" , value = FALSE),
+          checkboxInput("customScaleY", label = tags$b("Eigene Y-Achse (nur NightPlot)") , value = FALSE),
           sliderInput("yAxis", label = NULL, min = -10, 
             max = 100, value = c(0,20),step=0.5),
-          
-          tags$b("Koordinaten (in Dezimalgrad)"),
-          checkboxInput("customCoord", label = "aktiv" , value = FALSE),
-          p("Breite"),
-          numericInput("lat", label = NULL, value =  47.4),
-          p("Länge"),
-          numericInput("long", label = NULL, value =  8.52)
+
+          div(id="linkToSummary",tags$a("Mehr Optionen")),
+          HTML("<script>$('#linkToSummary').click(function() {
+             tabs = $('.tabbable .nav.nav-tabs li')
+             tabs.each(function() {
+              $(this).removeClass('active')
+             })
+             $(tabs[4]).addClass('active')
+            
+             tabsContents = $('.tabbable .tab-content .tab-pane')
+             tabsContents.each(function() {
+              $(this).removeClass('active')
+             })
+             $(tabsContents[4]).addClass('active')
+
+            $('#summary').trigger('change').trigger('shown');
+             
+           })</script>")
+
         ,width=3),#sidebarpanel
         
         # Show a tabset that includes a plot, summary, and table view
-        # of the generated distribution
+        # of data
         mainPanel(
           tabsetPanel(type = "tabs",id="tabs", 
-            tabPanel("nightPlot", plotOutput("nightPlot",height = "700px")), 
-            tabPanel("periodPlot", plotOutput("periodPlot",height = "700px")), 
-            tabPanel("Summary", dataTableOutput("sum_table")),
-            tabPanel("Data", dataTableOutput("data_table"))
+            tabPanel("nightPlot", plotOutput("nightPlot",height = "600px")), 
+            tabPanel("periodPlot", plotOutput("periodPlot",height = "600px")), 
+            tabPanel("Zusammenfassung", dataTableOutput("sum_table")),
+            tabPanel("Daten", dataTableOutput("data_table")),
+            tabPanel("Optionen",id="optsPanel",
+              fluidRow(
+                column(4,
+
+                  sliderInput("qual", 
+                    "Minimale Spezies Qualität", 
+                    value = 0.8,
+                    min = 0, 
+                    max = 1),
+    
+                  selectizeInput("speciesColName", label = "Kolonnenname Spezies",
+                  choices = "AutoClass1",
+                  selected = "AutoClass1"),
+    
+                  selectizeInput("speciesQualName", label = "Kolonnenname Spezies Qualität",
+                  choices = "AutoClass1Qual",
+                  selected = "AutoClass1Qual"),
+                  tags$br(),
+                  sliderInput("bins", 
+                    "Länge der bins", 
+                    value = 5,
+                    min = 1,
+                    max = 120)
+                ),
+                column(4,
+                  checkboxInput("customCoord", label = "Koordinaten (in Dezimalgrad)" , value = FALSE),
+                  p("Breite"),
+                  numericInput("lat", label = NULL, value =  47.4),
+                  p("Länge"),
+                  numericInput("long", label = NULL, value =  8.52)
+                )
+              )
+            )  
           )
         ) #mainpanel
       )#sidebarLayout
@@ -102,7 +127,7 @@ shiny_batPlots <- function(
     {
       observe({
         validate(
-          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswaehlen")
+          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
           # update Projectnames
           projectNames <- unique(dataInput()$ProjectName)
@@ -157,11 +182,11 @@ shiny_batPlots <- function(
           updateSliderInput(session, "yAxis", 
             max = round_any((max(dataSummary()$n_events,na.rm=TRUE))*1.4,50,f=ceiling))
 
-      }) #observe
+      }) #observehttps://courses.cs.washington.edu/courses/cse190m/12sp/cheat-sheets/php-regex-cheat-sheet.pdf
 
       dataInput <- reactive({
         validate(
-          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswaehlen")
+          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
         inFile <- input$file1
         pathname <- gsub("//", "/",inFile$datapath)
@@ -181,7 +206,7 @@ shiny_batPlots <- function(
     
       dataSummary <- reactive({
         validate(
-          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswaehlen")
+          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
         inFile <- input$file1
 
@@ -209,14 +234,14 @@ shiny_batPlots <- function(
     
       output$data_table <- renderDataTable({
         validate(
-          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswaehlen")
+          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
         dataSummary()
       }) #output$data_table
 
       output$sum_table <- renderDataTable({
         validate(
-          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswaehlen")
+          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
         ddply(dataSummary(),.(ProjectName,SurveyDate),summarize,n_events_day=sum(n_events))
       }) #output$sum_table
@@ -224,7 +249,7 @@ shiny_batPlots <- function(
       output$nightPlot <- renderPlot({
 
         validate(
-          need(as.character(input$dates[1]) %in% format(dataSummary()$SurveyDate,"%Y-%m-%d"),"Keine Datenpunkte fuer ausgewaehltes Datum")
+          need(as.character(input$dates[1]) %in% format(dataSummary()$SurveyDate,"%Y-%m-%d"),"Keine Datenpunkte für ausgewähltes Datum")
         )
         if(input$customScaleX){
           hhmm1 <- str_c(c(floor(input$hourAxis1),

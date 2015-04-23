@@ -81,8 +81,8 @@ shiny_batPlots <- function(
         # of data
         mainPanel(
           tabsetPanel(type = "tabs",id="tabs", 
-            tabPanel("nightPlot", plotOutput("nightPlot",height = "600px")), 
-            tabPanel("periodPlot", plotOutput("periodPlot",height = "600px")), 
+            tabPanel("NightPlot", plotOutput("nightPlot",height = "600px")), 
+            tabPanel("PeriodPlot", plotOutput("periodPlot",height = "600px")), 
             tabPanel("Zusammenfassung", dataTableOutput("sum_table")),
             tabPanel("Daten", dataTableOutput("data_table")),
             tabPanel("Optionen",id="optsPanel",
@@ -115,6 +115,15 @@ shiny_batPlots <- function(
                   numericInput("lat", label = NULL, value =  47.4),
                   p("Länge"),
                   numericInput("long", label = NULL, value =  8.52)
+                ),
+                column(4,
+                  tags$b("NightPlot Optionen"),
+                  sliderInput("n_ybreaks", 
+                    "Anzahl Ticks auf der y-Achse", 
+                    value = 5,
+                    min = 1,
+                    max = 120),
+                  checkboxInput("plotTemp", label = "Temperaturverlauf anzeigen" , value = FALSE)
                 )
               )
             )  
@@ -165,13 +174,14 @@ shiny_batPlots <- function(
           )
 
           #update DateRange
-          if(input$tabs=="nightPlot"){
+          
+          if(input$tabs=="NightPlot"){
             updateDateRangeInput(session, "dates", 
               start = format(min(dataInput()$SurveyDate),"%Y-%m-%d"), 
               end = format(min(dataInput()$SurveyDate),"%Y-%m-%d")
             )
           }
-          if(input$tabs=="periodPlot"){
+          if(input$tabs=="PeriodPlot"){
             updateDateRangeInput(session, "dates", 
               start = format(min(dataInput()$SurveyDate),"%Y-%m-%d"), 
               end = format(max(dataInput()$SurveyDate),"%Y-%m-%d")
@@ -261,19 +271,21 @@ shiny_batPlots <- function(
         } else {
           xlim <- NULL
         }
-
+        print(xlim)
         if(input$customScaleY){
           ylim <- input$yAxis
         } else {
           ylim <- NULL
         }
-
+        print(ylim)
         plotData <- subset(dataSummary(),ProjectName %in% input$project)
         nightPlot(plotData,
           day=as.character(input$dates),
           sel_species=input$species,
           x_limits = xlim,
-          y_limits = ylim)
+          y_limits = ylim,
+          plot_T=input$plotTemp,
+          n_ybreaks=input$n_ybreaks)
     
       }) #output$nightPlot
 
@@ -299,16 +311,4 @@ shiny_batPlots <- function(
       }) #output$periodPlot
     }
   )
-}
-
-#' textInput
-#' 
-#' shiny helper function
-#'
-#' @return text input
-#' @family interactive functions
-textInput<-function (inputId, label, value = "",...) 
-{
-    tagList(tags$label(label, `for` = inputId), tags$input(id = inputId, 
-                                                           type = "text", value = value,...))
 }

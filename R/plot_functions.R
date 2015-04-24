@@ -168,7 +168,7 @@ periodPlot <- function(plotData,
       size=0.3,color="grey25")+
     facet_wrap(~ProjectName,ncol = 2)+
     scale_x_datetime(limits=x_limits,breaks=date_breaks("months"),
-      labels=date_format("%b %Y"))+
+      labels=date_format("%b"))+
     scale_y_datetime(limits=y_limits,breaks=date_breaks("2 hour"),
       minor_breaks=date_breaks("1 hour"),
       labels = date_format("%H:%M"))+

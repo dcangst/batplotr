@@ -1,6 +1,6 @@
 Package: batplotr
 Title: Simple BatScope Data Visualization
-Version: 1.0
+Version: 1.1
 Authors@R: person("Daniel", "Angst", , "dcangst@gmail.com", 
     role = c("aut", "cre"))
 Description: read data from batLogger export and visualize it

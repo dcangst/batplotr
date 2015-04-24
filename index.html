@@ -15,9 +15,7 @@
       <h2 class="project-tagline">analyze and visualize batscope data</h2>
       <a href="https://github.com/dcangst/batplotr" class="btn">View on GitHub</a>
       <a href="https://github.com/dcangst/batplotr/zipball/master" class="btn">Download .zip</a>
-      <a href="batplotr_anleitung.html" class="btn" target="_blank">View Manual (German only)</a>
       <a href="https://github.com/dcangst/batplotr/tarball/master" class="btn">Download .tar.gz</a>
-
     </section>
 
     <section class="main-content">
@@ -28,25 +26,71 @@
 <a id="about-batplotr" class="anchor" href="#about-batplotr" aria-hidden="true"><span class="octicon octicon-link"></span></a>About <code>batplotR</code>
 </h2>
 
-<p><code>batplotR</code> is a package to visualize data generated with <a href="http://www.wsl.ch/dienstleistungen/produkte/software/batscope/index_DE">BatScope</a> and allows simple visualization of short (one night) and long (many nights) time-series of ultrasound calls recorded with a BatLogger. All you need is a Excel file export from BatScope</p>
+<p><code>batplotR</code> is a <code>R</code> package to visualize data generated with <a href="http://www.wsl.ch/dienstleistungen/produkte/software/batscope/index_DE">BatScope</a> and allows simple visualization of short (one night) and long (many nights) time-series of ultrasound calls recorded with a BatLogger. All you need is a Excel file export from BatScope. Most functions can be accessed from within a <a href="http://shiny.rstudio.com">Shiny</a> web-app.</p>
 
 <h2>
 <a id="how-to-install" class="anchor" href="#how-to-install" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to install</h2>
 
 <p>To install <code>batplotr</code> you need the <a href="https://github.com/hadley/devtools"><code>devtools</code></a>package which can be installed from CRAN. Once installed you can run the following code to get the latest version <code>batplotr</code>:</p>
 
-<pre><code>library(devtools)
-install_github("dcangst/batplotr")
-</code></pre>
+<div class="highlight highlight-r"><pre>library(<span class="pl-smi">devtools</span>)
+install_github(<span class="pl-s"><span class="pl-pds">"</span>dcangst/batplotr<span class="pl-pds">"</span></span>)</pre></div>
 
 <p>or to get a specific version:</p>
 
-<pre><code>library(devtools)
-install_github("dcangst/batplotr", ref="v0.1")
-</code></pre>
+<div class="highlight highlight-r"><pre>library(<span class="pl-smi">devtools</span>)
+install_github(<span class="pl-s"><span class="pl-pds">"</span>dcangst/batplotr<span class="pl-pds">"</span></span>, <span class="pl-v">ref</span><span class="pl-k">=</span><span class="pl-s"><span class="pl-pds">"</span>v0.1<span class="pl-pds">"</span></span>)</pre></div>
 
 <h2>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+<a id="standalone-shiny-web-app" class="anchor" href="#standalone-shiny-web-app" aria-hidden="true"><span class="octicon octicon-link"></span></a>Standalone Shiny Web App</h2>
+
+<p>The package includes the function <code>shiny_batPlots()</code>. It launches a shiny web app that replicates most futures of the package in a web app. For ease of use you can set up a script to launch the web app directly from your computer.</p>
+
+<h3>
+<a id="mac-os--probably-other-unix-systems-tested-in-macosx-10103-only" class="anchor" href="#mac-os--probably-other-unix-systems-tested-in-macosx-10103-only" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mac OS / probably other UNIX systems (tested in MacOSX 10.10.3 only)</h3>
+
+<p>Paste the following code into a plain text file with extension '.command'</p>
+
+<pre><code>#!/usr/bin/Rscript
+
+if("batplotr" %in% rownames(installed.packages())){
+  tryCatch(suppressMessages(batplotr::github_update("batplotr","dcangst/batplotr")),error=function(Cond){devtools::install_github("dcangst/batplotr",dependencies=TRUE)})
+} else {
+  if("devtools" %in% rownames(installed.packages())){
+    devtools::install_github("dcangst/batplotr",dependencies=TRUE)
+  } else {
+    install.packages(c("devtools"),dependencies=TRUE)
+    devtools::install_github("dcangst/batplotr",dependencies=TRUE)
+  }
+}
+
+suppressMessages(library(batplotr))
+shiny_batPlots()
+</code></pre>
+
+<p>The file then needs to be made executable, which you can do in the terminal using the following command:</p>
+
+<pre><code>chmod +x /path/to/shellfile.command
+</code></pre>
+
+<p>(you can drag and drop the file into the terminal so you don't have to type the path).
+This Script will install and or update all necessary components and launch the shiny web app.</p>
+
+<h3>
+<a id="windows" class="anchor" href="#windows" aria-hidden="true"><span class="octicon octicon-link"></span></a>Windows</h3>
+
+<p>the easiest way on windows is to follow the instructions on this page:
+<a href="http://www.r-datacollection.com/blog/Making-R-files-executable/">http://www.r-datacollection.com/blog/Making-R-files-executable/</a>
+and use the following R-Script:</p>
+
+<div class="highlight highlight-r"><pre><span class="pl-e">devtools</span><span class="pl-k">::</span>install_github(<span class="pl-s"><span class="pl-pds">"</span>dcangst/batplotr<span class="pl-pds">"</span></span>,<span class="pl-v">dependencies</span><span class="pl-k">=</span><span class="pl-c1">TRUE</span>)
+suppressMessages(library(<span class="pl-smi">batplotr</span>))
+shiny_batPlots()</pre></div>
+
+<p>This will install batplotr and launch the web app. (Unfortunately the above version does not work on Windows)</p>
+
+<h2>
+<a id="usage-in-r" class="anchor" href="#usage-in-r" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage in R</h2>
 
 <p>see <code>?batplotr</code> for more information on the individual functions. for simple plots run this example using a .xlsx generated by BatScope Export</p>
 
@@ -55,7 +99,7 @@ install_github("dcangst/batplotr", ref="v0.1")
 nightPlot(<span class="pl-smi">batScopeData_sum</span>)
 periodPlot(<span class="pl-smi">batScopeData_sum</span>)</pre></div>
 
-<p>there is also a detailed manual <a href="batplotr_anleitung.html">here</a>, but unfortunately in German only</p>
+<p>ther is also a detailed manual <a href="http://dcangst.github.io/batplotr/batplotr_anleitung.html">here</a>, but unfortunately in German only.</p>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/dcangst/batplotr">Batplotr</a> is maintained by <a href="https://github.com/dcangst">dcangst</a>.</span>

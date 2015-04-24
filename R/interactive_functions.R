@@ -7,7 +7,7 @@
 #' @family interactive functions
 #' @export
 shiny_batPlots <- function(
-  option.list=list(shiny.launch.browser=TRUE,shiny.maxRequestSize=100*1024^2)
+  option.list=list(shiny.launch.browser=TRUE,shiny.maxRequestSize=100*1024^2,encoding="UTF-8")
   ) 
   {
   shinyApp(

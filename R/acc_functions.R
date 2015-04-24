@@ -57,7 +57,7 @@ listHead <- function(list,n=6){
 #' @export 
 github_update <- function(package,repo,ref = "master"){
   url <- paste0("https://raw.githubusercontent.com/",repo,"/",ref,"/DESCRIPTION")
-  content <- tryCatch(RCurl::getURL(url),
+  content <- tryCatch(RCurl::getURL(url,.opts(ssl.verifypeer=FALSE)),
     error=function(Cond){return(FALSE)},
     warning=function(Cond){return(FALSE)})
   if(content==FALSE){

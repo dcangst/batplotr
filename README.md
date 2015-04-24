@@ -26,8 +26,20 @@ The package includes the function `shiny_batPlots()`. It launches a shiny web ap
 
 ### Mac OS / probably other UNIX systems (tested in MacOSX 10.10.3 only)
 Paste the following code into a plain text file with extension '.command'
-```shell
+```
 #!/usr/bin/Rscript
+
+if("batplotr" %in% rownames(installed.packages())){
+  tryCatch(suppressMessages(batplotr::github_update("batplotr","dcangst/batplotr")),error=function(Cond){devtools::install_github("dcangst/batplotr",dependencies=TRUE)})
+} else {
+  if("devtools" %in% rownames(installed.packages())){
+    devtools::install_github("dcangst/batplotr",dependencies=TRUE)
+  } else {
+    install.packages(c("devtools"),dependencies=TRUE)
+    devtools::install_github("dcangst/batplotr",dependencies=TRUE)
+  }
+}
+
 suppressMessages(library(batplotr))
 shiny_batPlots()
 ```
@@ -36,13 +48,20 @@ The file then needs to be made executable, which you can do in the terminal usin
 chmod +x /path/to/shellfile.command
 ```
 (you can drag and drop the file into the terminal so you don't have to type the path).
-You need to have the package installed in `R`. This can also be achieved using a similar script to install/update the package.
+This Script will install and or update all necessary components and launch the shiny web app.
 
-### Windows (untested)
-This should work for Windows, save with extension `.bat`:
-```bat
-X:\path\to\Rscript.exe -e "suppressMessages(library(batplotr));shiny_batPlots()"
+### Windows 
+the easiest way on windows is to follow the instructions on this page:
+http://www.r-datacollection.com/blog/Making-R-files-executable/
+and use the following R-Script:
+
+```r
+devtools::install_github("dcangst/batplotr",dependencies=TRUE)
+suppressMessages(library(batplotr))
+shiny_batPlots()
 ```
+
+This will install batplotr and launch the web app. (Unfortunately the above version does not work on Windows)
 
 ## Usage in R
 

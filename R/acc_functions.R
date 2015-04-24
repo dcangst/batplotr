@@ -67,13 +67,9 @@ github_update <- function(package,repo,ref = "master"){
   version_git <- gsub(".*\\Version: (.*)\nA.*", "\\1", content)
   version_loc <- as.character(packageVersion(package))
   if(version_git != version_loc){
-    cat("A new version of batplotr is available!\n","(",version_git,", you have ",version_loc,")",sep="")
-    input <- readline("Would you like to update? [Y/n]")
-    if(input=="n"){
-      return("not updated")
-    } else {
-      devtools::install_github(repo,dependencies=TRUE)
-      return(paste("batplotr updated to version",version_git))
+    message("A new version of batplotr is available!\n","(",version_git,", you have ",version_loc,")",sep="")
+    devtools::install_github(repo,dependencies=TRUE)
+    return(paste("batplotr updated to version",version_git))
     }
   }
   return(paste(package,"is up to date."))

@@ -34,6 +34,7 @@ shiny_batPlots <- function(
           ),
           
           fileInput('file1', 'BatScope xlsx auswählen',
+            multiple=TRUE,
             accept=c('.xlsx', 
             '.xls')
           ),
@@ -236,9 +237,9 @@ shiny_batPlots <- function(
         inFile <- input$file1
         pathname <- gsub("//", "/",inFile$datapath)
         path <- file.copy(pathname,paste0(pathname,".xlsx"))
-
+        print(path)
         withProgress(message = paste0(inFile$name," wird eingelesen... (Geduld!)"), value = 0.1, {
-          data <- readBatscopeXLSX(
+          data <- readBatscopeXLSX_multiple(
             path=paste0(pathname,".xlsx"),
             species_col_name = input$speciesColName,
             quality_col_name = input$speciesQualName,
@@ -250,8 +251,18 @@ shiny_batPlots <- function(
       }) #dataInput
     
       data_r <- reactive({
+        
+        #validate(
+        #  need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
+        #)
+        gps_coords <- ddply(dataInput(),.(ProjectName),summarize,
+          lat=mean(GPSLatitude[GPSValid=="yes"],na.rm=TRUE),
+          long=mean(GPSLongitude[GPSValid=="yes"],na.rm=TRUE)
+        )
+        print((any(is.na(gps_coords))==FALSE | input$customCoord==TRUE))
         validate(
-          need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
+          need((any(is.na(gps_coords))==FALSE | input$customCoord==TRUE),
+            "GPS Koordinaten nicht für alle Stationen vorhanden. Bitte manuell eingeben.")
         )
         inFile <- input$file1
 

@@ -11,23 +11,26 @@
 #' @param quality_threshold sequences with species assignment quality below this
 #'  threshold will be discarded.
 #' @param shiny_progress display more progress info for shiny
+#' @param shiny_progress_n fraction of progres bar for multiple files
 #' @family data functions
 #' @export
 readBatscopeXLSX <- function(path=file.choose(), 
   species_col_name="AutoClass1", 
   quality_col_name="AutoClass1Qual",
   quality_threshold=0.8,
-  shiny_progress=FALSE){
+  shiny_progress=FALSE,
+  shiny_progress_n=1
+  ){
 
   message("\n",path,"\nwird eingelesen, kann eine Weile dauern...\n")
-  if(shiny_progress){incProgress(0.1, detail = ".xlsx lesen..")}
+  if(shiny_progress){incProgress(0.1/shiny_progress_n, detail = ".xlsx lesen..")}
   rawdata <- openxlsx::read.xlsx(path, sheet = 1, 
     startRow = 1, colNames = TRUE, 
     skipEmptyRows = TRUE, rowNames = FALSE, 
     detectDates = FALSE, rows = NULL, cols = NULL)
   dateOrigin <- openxlsx::getDateOrigin(path)
   #str(rawdata)
-  if(shiny_progress){incProgress(0.6, detail = "Qualitätsprüfung...")}
+  if(shiny_progress){incProgress(0.6/shiny_progress_n, detail = "Qualitätsprüfung...")}
 
   # MODIFY DATA for use in R
   data_r <- rawdata
@@ -40,14 +43,14 @@ readBatscopeXLSX <- function(path=file.choose(),
   dim_qual_diff <- dim_qual_before[1]-dim_qual_after[1]
 
 
-  cat("Summary of ",quality_col_name,"\n\n",sep="")
-  print(summary(rawdata[,quality_col_nr]))
-  cat("\n\'Discarded ",dim_qual_diff," of ",
+  message("Summary of ",quality_col_name,"\n\n",sep="")
+  message(summary(rawdata[,quality_col_nr]))
+  message("\n\'Discarded ",dim_qual_diff," of ",
     dim_qual_before[1]," sequences (",
     (dim_qual_diff/dim_qual_before[1])*100,"%); ",dim_qual_after[1],
     " remaining\n",sep="")
 
-  if(shiny_progress){incProgress(0.1, detail = "Daten formatieren...")}
+  if(shiny_progress){incProgress(0.1/shiny_progress_n, detail = "Daten formatieren...")}
   # convert data_r/time format from excel to R
   data_r$ImportDate <- openxlsx::convertToDateTime(data_r$ImportDate, 
     origin = dateOrigin)
@@ -209,4 +212,38 @@ sumBatscopeData <- function(
 
   data_binned$bin_length <- bin_length
   return(data_binned)
+}
+
+#' Read all BatScope Export Files in Folder
+#' 
+#' Wrapper for readBatscopeXLSX to read multiple \code{xlsx} files or all files
+#' within a folder
+#'
+#' @param path path to one file within folder or a vector of path, defaults to choose.file()
+#' @param read_folder logical, should all .xlsx files in the folder be read?
+#' @param ... additional arguments passed to \code{\link{readBatscopeXLSX}}
+#' @family data functions
+#' @export
+readBatscopeXLSX_multiple <- function(path=file.choose(),read_folder=FALSE, 
+  ...){
+  
+  if(read_folder){
+    folder <- dirname(path)
+    files <- list.files(folder,pattern=".xlsx",full.names = TRUE)
+  } else {
+    files <- path
+  }
+  
+  message("Reading following files")
+  message(files)
+  data <- list()
+  pb <- txtProgressBar(min = 0, max = 1, initial = 0, char = "=",
+             width = NA, style = 3)
+  for (i in seq_along(files)){
+    data[[i]] <- suppressMessages(readBatscopeXLSX(files[i],shiny_progress_n=length(files),...))
+    setTxtProgressBar(pb, i/length(files))
+  }
+  close(pb)
+  data <- ldply(data,rbind)
+  return(data)
 }

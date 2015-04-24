@@ -1,6 +1,6 @@
 Package: batplotr
 Title: Simple BatScope Data Visualization
-Version: 1.12
+Version: 1.13
 Authors@R: person("Daniel", "Angst", , "dcangst@gmail.com", 
     role = c("aut", "cre"))
 Description: read data from batLogger export and visualize it
@@ -16,5 +16,5 @@ Depends: R (>= 3.1.3),
     shiny,
     scales
 Imports: RCurl, devtools
-License: What license is it under?
+License: file LICENSE
 LazyData: true

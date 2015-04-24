@@ -70,8 +70,8 @@ github_update <- function(package,repo,ref = "master"){
     message("A new version of batplotr is available!\n","(",version_git,", you have ",version_loc,")",sep="")
     devtools::install_github(repo,dependencies=TRUE)
     return(paste("batplotr updated to version",version_git))
-    }
   }
+  
   return(paste(package,"is up to date."))
 
 }

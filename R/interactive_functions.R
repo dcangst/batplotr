@@ -234,7 +234,7 @@ shiny_batPlots <- function(
           updateSliderInput(session, "yAxis", 
             max = round_any((max(data_r()$n_events,na.rm=TRUE))*1.4,50,f=ceiling))
 
-      }) #observehttps://courses.cs.washington.edu/courses/cse190m/12sp/cheat-sheets/php-regex-cheat-sheet.pdf
+      }) #observe
 
       dataInput <- reactive({
         validate(

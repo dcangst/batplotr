@@ -4,7 +4,8 @@ Version: 1.14
 Authors@R: person("Daniel", "Angst", , "dcangst@gmail.com", 
     role = c("aut", "cre"))
 Description: read data from batLogger export and visualize it
-Depends: R (>= 3.1.3),
+Depends:
+    R (>= 3.1.3),
     maptools,
     plyr,
     ggplot2,
@@ -15,6 +16,9 @@ Depends: R (>= 3.1.3),
     reshape2,
     shiny,
     scales
-Imports: RCurl, devtools
+Imports:
+    RCurl,
+    devtools
 License: file LICENSE
 LazyData: true
+RoxygenNote: 5.0.1

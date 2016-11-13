@@ -73,11 +73,32 @@ shiny_batPlots <- function(
             max = 24.0, value = 10.0, step = 0.5
           ),
           checkboxInput("customScaleY",
-            label = tags$b("Eigene Y-Achse (nur NightPlot)"),
+            label = tags$b("Y-Achse (NightPlot)"),
             value = FALSE),
           sliderInput("yAxis", label = NULL, min = -10,
             max = 100, value = c(0, 20), step = 0.5
           ),
+          tags$b("X-Achsenunterteilung (PeriodPlot)"),
+          numericInput("x_breaks_num",
+            label = NULL, value = 1, min = 1, max = NA, step = 1),
+          selectInput(
+            "x_breaks_unit", label = NULL,
+            choices = c(
+              "Tag" = "day",
+              "Woche" = "week",
+              "Monat" = "month",
+              "Jahr" = "year"),
+            selected = "week",
+            multiple = FALSE
+          ),
+          selectInput("x_breaks_label", "Beschriftung",
+            choices = c(
+              "Datum" = "%e.%m.%Y",
+              "nur Monat" = "%b",
+              "Monat/Jahr" = "%b %Y",
+              "Wochennummer" = "%U"),
+            selected = "%e.%m.%Y",
+            multiple = FALSE),
           div(id = "linkToSummary", tags$a("Mehr Optionen")),
           HTML("<script>$('#linkToSummary').click(function() {
              tabs = $('.tabbable .nav.nav-tabs li')
@@ -437,13 +458,18 @@ shiny_batPlots <- function(
         } else {
           ylim <- NULL
         }
-
+        x_breaks <- paste(input$x_breaks_num, input$x_breaks_unit)
+        print(x_breaks)
+        x_breaks_label <- input$x_breaks_label
         plotData <- subset(data_r(), ProjectName %in% input$project)
         periodPlot(plotData,
           start_date = as.character(input$dates[1]),
           end_date = as.character(input$dates[2]),
           sel_species = input$species,
           y_limits = ylim,
+          x_break_distance = x_breaks,
+          y_break_distance = "2 hour",
+          x_break_label = x_breaks_label,
           text_size = input$text_size)
       }) #shiny_periodPlot
 

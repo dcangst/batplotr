@@ -47,8 +47,8 @@ readBatscopeXLSX <- function(path = file.choose(),
   dim_qual_diff <- dim_qual_before[1] - dim_qual_after[1]
 
   message("Summary of ", quality_col_name, "\n\n", sep = "")
-  message(summary(rawdata[, quality_col_nr]))
-  message("\n\'Discarded ", dim_qual_diff, " of ",
+  print(summary(rawdata[, quality_col_nr]))
+  message("\nDiscarded ", dim_qual_diff, " of ",
     dim_qual_before[1], " sequences (",
     (dim_qual_diff / dim_qual_before[1]) * 100, "%); ", dim_qual_after[1],
     " remaining\n", sep = "")
@@ -105,7 +105,7 @@ readBatscopeXLSX <- function(path = file.choose(),
 #' @export
 sumBatscopeData <- function(
   data_r,
-  bin_length=5,
+  bin_length = 5,
   lat = NULL,
   long = NULL,
   progress = "text",
@@ -126,8 +126,9 @@ sumBatscopeData <- function(
       by = paste0(bin_length, " min"), length = n_cuts)
   }
   cuts <- as.POSIXct(unlist(cuts_list), origin = "1970-01-01 00:00")
-  data_r$bins_factor <- cut(data_r$recTime, cuts, include.lowest = TRUE,
-    right = FALSE)
+  duplicated(unlist(cuts_list))
+  data_r$bins_factor <- cut(data_r$recTime, breaks = unique(cuts),
+    include.lowest = TRUE, right = FALSE)
 
   # Zahlen der Events pro Tag, Mikrophon, species und bins
   if (shiny_progress){

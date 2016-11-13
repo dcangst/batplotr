@@ -100,6 +100,11 @@ nightPlot <- function(plotData,
 #' @param y_limits y-axis limits, NULL (default) or a character or POSIXct 
 #'   vector of length 2 with format
 #'   \code{c("1900-01-01 HH:MM","1900-01-02 HH:MM")}
+#' @param x_break_distance A string giving the distance between x breaks like
+#'   "2 weeks", or "10 years".
+#' @param x_break_label Time format for labels, see \code{\link{strptime}}.
+#' @param y_break_distance A string giving the distance between ybreaks like
+#'   "2 weeks", or "10 years".
 #' @param text_size base text size 
 #' @return a \code{ggplot} object
 #' @family plot functions
@@ -110,6 +115,9 @@ periodPlot <- function(plotData,
   sel_species = "every",
   x_limits = NULL,
   y_limits = NULL,
+  x_break_distance = "1 month",
+  y_break_distance = "2 hour",
+  x_break_label = "%b",
   text_size = 16){
 
   if (is.POSIXct(start_date) == FALSE){
@@ -178,9 +186,11 @@ periodPlot <- function(plotData,
     geom_line(aes(SurveyDate, sunset_time),
       size = 0.3, color = "grey25") +
     facet_wrap(~ProjectName, ncol = 2) +
-    scale_x_datetime(limits = x_limits, breaks = date_breaks("months"),
-      labels = date_format("%b")) +
-    scale_y_datetime(limits = y_limits, breaks = date_breaks("2 hour"),
+    scale_x_datetime(limits = x_limits,
+      breaks = date_breaks(x_break_distance),
+      labels = date_format(x_break_label)) +
+    scale_y_datetime(limits = y_limits,
+      breaks = date_breaks(y_break_distance),
       minor_breaks = date_breaks("1 hour"),
       labels = date_format("%H:%M")) +
     labs(x = "Datum", y = "Uhrzeit [UTC+1]", title = plottitle) +
@@ -191,7 +201,8 @@ periodPlot <- function(plotData,
     geom_point(aes(size = n_events), alpha = 0.5, color = "blue")
   } else {
     periodPlot <- periodPlot +
-      geom_point(aes(size = n_events, color = species), alpha = 0.5)
+    geom_point(aes(size = n_events, color = species),
+      alpha = 0.5)
   }
   return(periodPlot)
 }

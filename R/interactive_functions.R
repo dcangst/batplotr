@@ -454,7 +454,7 @@ shiny_batPlots <- function(
                 2, "right", "0")), collapse = ":")
           ylim <- as.POSIXct(
             c(paste("1900-01-01", hhmm1),
-              paste("1900-01-02", )))
+              paste("1900-01-02", hhmm2)))
         } else {
           ylim <- NULL
         }

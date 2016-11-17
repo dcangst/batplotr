@@ -49,7 +49,7 @@ shiny_batPlots <- function(
             accept = c(".xlsx", ".xls")
           ),
           checkboxInput("force_dst_corr", "DST Korrektur",
-            value = TRUE, width = NULL),
+            value = FALSE, width = NULL),
           selectizeInput(
             "project", "Standorte",
             choices = "?", multiple = TRUE

@@ -48,6 +48,8 @@ shiny_batPlots <- function(
             multiple = TRUE,
             accept = c(".xlsx", ".xls")
           ),
+          checkboxInput("force_dst_corr", "DST Korrektur",
+            value = TRUE, width = NULL),
           selectizeInput(
             "project", "Standorte",
             choices = "?", multiple = TRUE
@@ -209,7 +211,7 @@ shiny_batPlots <- function(
                         max = 32),
                       tags$h4("NightPlot Optionen"),
                       checkboxInput("plotTemp",
-                        label = "Temperaturverlauf  anzeigen",
+                        label = "Temperaturverlauf anzeigen",
                         value = FALSE),
                       selectizeInput("plot_T_color",
                         label = "Farbe Temperaturkurve",
@@ -470,7 +472,8 @@ shiny_batPlots <- function(
           x_break_distance = x_breaks,
           y_break_distance = "2 hour",
           x_break_label = x_breaks_label,
-          text_size = input$text_size)
+          text_size = input$text_size,
+          force_dst_corr = input$force_dst_corr)
       }) #shiny_periodPlot
 
       output$periodPlot <- renderPlot({

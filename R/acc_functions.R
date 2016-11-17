@@ -3,11 +3,15 @@
 #' converts time to UTC (to avoid problems with daylight saving time)
 #'
 #' @param date a POSIXct object, or a vector thereof
+#' @param force_dst_corr if TRUE daylight saving time is forcefully corrected.
 #' @family accessory functions
 #' @export
-convertToUTC <- function(date){
-  date_utc <- lubridate::force_tz(date, tzone = "UTC") -
-    3600 * lubridate::dst(date)
+convertToUTC <- function(date, force_dst_corr = TRUE){
+  date_utc <- lubridate::force_tz(date, tzone = "UTC")
+  if (force_dst_corr){
+   date_utc <- date_utc - 3600 * lubridate::dst(date)
+  }
+  return(date_utc)
 }
 
 #' Time of Night
@@ -19,8 +23,8 @@ convertToUTC <- function(date){
 #' @param date a POSIXct object, or a vector thereof
 #' @family accessory functions
 #' @export
-timeOfNight <- function(date){
-  dateUTC <- convertToUTC(date)
+timeOfNight <- function(date, force_dst_corr = TRUE){
+  dateUTC <- convertToUTC(date, force_dst_corr)
   evening <- lubridate::hour(dateUTC) >= 13
   evening[is.na(evening)] <- FALSE
   morning <- !lubridate::hour(dateUTC) >= 13

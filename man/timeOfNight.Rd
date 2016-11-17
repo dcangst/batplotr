@@ -4,7 +4,7 @@
 \alias{timeOfNight}
 \title{Time of Night}
 \usage{
-timeOfNight(date)
+timeOfNight(date, force_dst_corr = TRUE)
 }
 \arguments{
 \item{date}{a POSIXct object, or a vector thereof}

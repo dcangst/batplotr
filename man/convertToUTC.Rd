@@ -4,10 +4,12 @@
 \alias{convertToUTC}
 \title{Convert to UTC}
 \usage{
-convertToUTC(date)
+convertToUTC(date, force_dst_corr = TRUE)
 }
 \arguments{
 \item{date}{a POSIXct object, or a vector thereof}
+
+\item{force_dst_corr}{if TRUE daylight saving time is forcefully corrected.}
 }
 \description{
 converts time to UTC (to avoid problems with daylight saving time)

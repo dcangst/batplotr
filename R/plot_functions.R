@@ -105,7 +105,8 @@ nightPlot <- function(plotData,
 #' @param x_break_label Time format for labels, see \code{\link{strptime}}.
 #' @param y_break_distance A string giving the distance between ybreaks like
 #'   "2 weeks", or "10 years".
-#' @param text_size base text size 
+#' @param text_size base text size
+#' @param force_dst_corr if TRUE daylight saving time is forcefully corrected.
 #' @return a \code{ggplot} object
 #' @family plot functions
 #' @export
@@ -118,7 +119,8 @@ periodPlot <- function(plotData,
   x_break_distance = "1 month",
   y_break_distance = "2 hour",
   x_break_label = "%b",
-  text_size = 16){
+  text_size = 16,
+  force_dst_corr = TRUE){
 
   if (is.POSIXct(start_date) == FALSE){
     start_date <- as.POSIXct(start_date, format = "%Y-%m-%d")
@@ -175,9 +177,9 @@ periodPlot <- function(plotData,
     direction = "sunrise", POSIXct.out = TRUE)[, 2]
 
   plotData_final <- merge(plotData_sub, sun_data, all = TRUE)
-  plotData_final$time <- timeOfNight(plotData_final$bins)
-  plotData_final$sunrise_time <- timeOfNight(plotData_final$sunrise)
-  plotData_final$sunset_time <- timeOfNight(plotData_final$sunset)
+  plotData_final$time <- timeOfNight(plotData_final$bins,force_dst_corr)
+  plotData_final$sunrise_time <- timeOfNight(plotData_final$sunrise,force_dst_corr)
+  plotData_final$sunset_time <- timeOfNight(plotData_final$sunset,force_dst_corr)
 
   periodPlot <- ggplot(plotData_final,
     aes(SurveyDate, time)) +

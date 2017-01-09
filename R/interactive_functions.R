@@ -48,8 +48,10 @@ shiny_batPlots <- function(
             multiple = TRUE,
             accept = c(".xlsx", ".xls")
           ),
-          checkboxInput("force_dst_corr", "DST Korrektur",
-            value = FALSE, width = NULL),
+          selectizeInput(
+            "time_zone", "Zeitzone",
+            choices = OlsonNames(), selected = "UTC",multiple = FALSE
+          ),
           selectizeInput(
             "project", "Standorte",
             choices = "?", multiple = TRUE
@@ -321,6 +323,7 @@ shiny_batPlots <- function(
               path = paste0(pathname, ".xlsx"),
               species_col_name = input$speciesColName,
               quality_col_name = input$speciesQualName,
+              time_zone = input$time_zone,
               quality_threshold  = input$qual,
               shiny_progress = TRUE)
             incProgress(1, detail = paste("Fertig!"))
@@ -426,7 +429,7 @@ shiny_batPlots <- function(
 
         plotData <- subset(data_r(), ProjectName %in% input$project)
         nightPlot(plotData,
-          day = as.character(input$dates),
+          day = input$dates,
           sel_species = input$species,
           x_limits = xlim,
           y_limits = ylim,
@@ -472,8 +475,8 @@ shiny_batPlots <- function(
           x_break_distance = x_breaks,
           y_break_distance = "2 hour",
           x_break_label = x_breaks_label,
-          text_size = input$text_size,
-          force_dst_corr = input$force_dst_corr)
+          time_zone = input$time_zone,
+          text_size = input$text_size)
       }) #shiny_periodPlot
 
       output$periodPlot <- renderPlot({

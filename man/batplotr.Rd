@@ -30,9 +30,7 @@ Simple BatScope Data visualization
 
      
      \code{\link{timeOfNight}}
-     
-     \code{\link{convertToUTC}}
-     
+              
      \code{\link{listHead}}
 }
 

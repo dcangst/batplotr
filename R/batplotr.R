@@ -17,9 +17,7 @@
 #'@section Accessory Functions:
 #'      
 #'      \code{\link{timeOfNight}}
-#'      
-#'      \code{\link{convertToUTC}}
-#'      
+#'               
 #'      \code{\link{listHead}}
 #' @name batplotr
 #' @docType package

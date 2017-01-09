@@ -1,19 +1,3 @@
-#' Convert to UTC
-#' 
-#' converts time to UTC (to avoid problems with daylight saving time)
-#'
-#' @param date a POSIXct object, or a vector thereof
-#' @param force_dst_corr if TRUE daylight saving time is forcefully corrected.
-#' @family accessory functions
-#' @export
-convertToUTC <- function(date, force_dst_corr = TRUE){
-  date_utc <- lubridate::force_tz(date, tzone = "UTC")
-  if (force_dst_corr){
-   date_utc <- date_utc - 3600 * lubridate::dst(date)
-  }
-  return(date_utc)
-}
-
 #' Time of Night
 #' 
 #' gives back a \code{POSIXct} object with date 1900-01-01 (evening) or 
@@ -23,19 +7,18 @@ convertToUTC <- function(date, force_dst_corr = TRUE){
 #' @param date a POSIXct object, or a vector thereof
 #' @family accessory functions
 #' @export
-timeOfNight <- function(date, force_dst_corr = TRUE){
-  dateUTC <- convertToUTC(date, force_dst_corr)
-  evening <- lubridate::hour(dateUTC) >= 13
+timeOfNight <- function(date){
+  evening <- lubridate::hour(date) >= 13
   evening[is.na(evening)] <- FALSE
-  morning <- !lubridate::hour(dateUTC) >= 13
+  morning <- !lubridate::hour(date) >= 13
   morning[is.na(morning)] <- FALSE
 
-  dateUTC[evening] <- update(dateUTC[evening],
+  date[evening] <- update(date[evening],
     year = 1900, month = 1, mday = 1)
-  dateUTC[morning] <- update(dateUTC[morning],
+  date[morning] <- update(date[morning],
     year = 1900, month = 1, mday = 2)
 
-  return(dateUTC)
+  return(date)
 }
 
 #' Print Head of a list of data.frames

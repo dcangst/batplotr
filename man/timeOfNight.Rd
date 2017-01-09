@@ -4,7 +4,7 @@
 \alias{timeOfNight}
 \title{Time of Night}
 \usage{
-timeOfNight(date, force_dst_corr = TRUE)
+timeOfNight(date)
 }
 \arguments{
 \item{date}{a POSIXct object, or a vector thereof}
@@ -15,7 +15,7 @@ gives back a \code{POSIXct} object with date 1900-01-01 (evening) or
 corrects for daylight saving time.
 }
 \seealso{
-Other accessory functions: \code{\link{convertToUTC}},
-  \code{\link{github_update}}, \code{\link{listHead}}
+Other accessory functions: \code{\link{github_update}},
+  \code{\link{listHead}}
 }
 

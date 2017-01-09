@@ -119,32 +119,32 @@ periodPlot <- function(plotData,
   x_break_distance = "1 month",
   y_break_distance = "2 hour",
   x_break_label = "%b",
-  text_size = 16,
-  force_dst_corr = TRUE){
+  time_zone = Sys.timezone(),
+  text_size = 16){
 
   if (is.POSIXct(start_date) == FALSE){
-    start_date <- as.POSIXct(start_date, format = "%Y-%m-%d")
+    start_date <- as.POSIXct(start_date, format = "%Y-%m-%d", tz = time_zone)
   }
   if (is.POSIXct(end_date) == FALSE){
-    end_date <- as.POSIXct(end_date, format = "%Y-%m-%d")
+    end_date <- as.POSIXct(end_date, format = "%Y-%m-%d", tz = time_zone)
   }
 
   if (!is.null(y_limits) & is.POSIXct(y_limits)[1] == FALSE){
-    y_limits <- as.POSIXct(y_limits)
+    y_limits <- as.POSIXct(y_limits, tz = time_zone)
   }
 
   cat("Plotting number of sequences over period:\n")
-  print( interval(start_date, end_date))
+  print( interval(start_date, end_date, tz = time_zone))
   if (sel_species[1] == "every"){
     plotData_sub <- subset(plotData,
-      SurveyDate %within% interval(start_date, end_date) &
+      SurveyDate %within% interval(start_date, end_date, tz = time_zone) &
       species != "all")
     plottitle <- paste("Tagesaktivität",
       format(start_date, format = "%d.%m.%Y"),
       "bis", format(end_date, format = "%d.%m.%Y"), "| Summe aller Spezies")
   } else {
     plotData_sub <- subset(plotData,
-      SurveyDate %within% interval(start_date, end_date) &
+      SurveyDate %within% interval(start_date, end_date, tz = time_zone) &
       species %in% sel_species)
     if (length(sel_species) == 1){
       plottitle <- paste("Tagesaktivität",
@@ -177,9 +177,9 @@ periodPlot <- function(plotData,
     direction = "sunrise", POSIXct.out = TRUE)[, 2]
 
   plotData_final <- merge(plotData_sub, sun_data, all = TRUE)
-  plotData_final$time <- timeOfNight(plotData_final$bins,force_dst_corr)
-  plotData_final$sunrise_time <- timeOfNight(plotData_final$sunrise,force_dst_corr)
-  plotData_final$sunset_time <- timeOfNight(plotData_final$sunset,force_dst_corr)
+  plotData_final$time <- timeOfNight(plotData_final$bins)
+  plotData_final$sunrise_time <- timeOfNight(plotData_final$sunrise)
+  plotData_final$sunset_time <- timeOfNight(plotData_final$sunset)
 
   periodPlot <- ggplot(plotData_final,
     aes(SurveyDate, time)) +
@@ -195,7 +195,7 @@ periodPlot <- function(plotData,
       breaks = date_breaks(y_break_distance),
       minor_breaks = date_breaks("1 hour"),
       labels = date_format("%H:%M")) +
-    labs(x = "Datum", y = "Uhrzeit [UTC+1]", title = plottitle) +
+    labs(x = "Datum", y = "Uhrzeit [UTC]", title = plottitle) +
     theme(text = element_text(size = text_size))
 
   if (sel_species[1] != "every" & length(sel_species) == 1){

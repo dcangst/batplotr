@@ -17,6 +17,7 @@
 readBatscopeXLSX <- function(path = file.choose(),
   species_col_name = "AutoClass1",
   quality_col_name = "AutoClass1Qual",
+  time_zone = Sys.timezone(),
   quality_threshold = 0.8,
   shiny_progress = FALSE,
   shiny_progress_n = 1
@@ -25,12 +26,7 @@ readBatscopeXLSX <- function(path = file.choose(),
   if (shiny_progress){
     shiny::incProgress(0.1 / shiny_progress_n, detail = ".xlsx lesen..")
   }
-
-  rawdata <- openxlsx::read.xlsx(path, sheet = 1,
-    startRow = 1, colNames = TRUE,
-    skipEmptyRows = TRUE, rowNames = FALSE,
-    detectDates = FALSE, rows = NULL, cols = NULL)
-  dateOrigin <- openxlsx::getDateOrigin(path)
+  rawdata <- read_excel(path)
 
   if (shiny_progress){
     shiny::incProgress(0.6 / shiny_progress_n, detail = "Qualitätsprüfung...")
@@ -41,13 +37,11 @@ readBatscopeXLSX <- function(path = file.choose(),
 
   # discard sequences with low quality
   dim_qual_before <- dim(rawdata)
-  quality_col_nr <- which(colnames(data_r) == quality_col_name)
-  data_r <- subset(data_r, data_r[, quality_col_nr] >= quality_threshold)
+  data_r <- dplyr::filter_(data_r, str_c(quality_col_name, ">=", quality_threshold))
   dim_qual_after <- dim(data_r)
   dim_qual_diff <- dim_qual_before[1] - dim_qual_after[1]
 
   message("Summary of ", quality_col_name, "\n\n", sep = "")
-  print(summary(rawdata[, quality_col_nr]))
   message("\nDiscarded ", dim_qual_diff, " of ",
     dim_qual_before[1], " sequences (",
     (dim_qual_diff / dim_qual_before[1]) * 100, "%); ", dim_qual_after[1],
@@ -57,31 +51,12 @@ readBatscopeXLSX <- function(path = file.choose(),
     incProgress(0.1 / shiny_progress_n, detail = "Daten formatieren...")
   }
   # convert data_r/time format from excel to R
-  data_r$ImportDate <- openxlsx::convertToDateTime(data_r$ImportDate,
-    origin = dateOrigin)
-  # fix subtle difference in POSIXct representation that messes with
-  # some functions
-  data_r$ImportDate <- as.POSIXct(as.character(data_r$ImportDate))
+  data_r$recTime <- update(data_r$recTime, year = year(data_r$recDate),
+   month = month(data_r$recDate), mday = day(data_r$recDate))
 
-  data_r$SurveyDate <- openxlsx::convertToDateTime(data_r$SurveyDate,
-    origin = dateOrigin)
-  #fix, see above
-  data_r$SurveyDate <- as.POSIXct(as.character(data_r$SurveyDate))
+  data_r <- dplyr::mutate_(data_r,.dots = setNames(list(str_c("species = ", species_col_name)), c("species")))
 
-  data_r$recTime <- openxlsx::convertToDateTime(
-    data_r$recTime + data_r$recDate,
-    origin = dateOrigin)
-  #fix, see above
-  data_r$recTime <- as.POSIXct(as.character(data_r$recTime))
-
-  data_r$recDate <- openxlsx::convertToDateTime(data_r$recDate,
-    origin = dateOrigin)
-  #fix, see above
-  data_r$recDate <- as.POSIXct(as.character(data_r$recDate))
-
-  species_col_nr <- which(names(data_r) == species_col_name)
-
-  data_r$species <- data_r[, species_col_nr]
+  data_r$temperature <- as.numeric(data_r$temperature)
 
   return(data_r)
 }
@@ -125,8 +100,8 @@ sumBatscopeData <- function(
     cuts_list[[i]] <- seq(unique(data_r$SurveyDate)[i] + nacht_start * 60 * 60,
       by = paste0(bin_length, " min"), length = n_cuts)
   }
-  cuts <- as.POSIXct(unlist(cuts_list), origin = "1970-01-01 00:00")
-  duplicated(unlist(cuts_list))
+  cuts <- as.POSIXct(unlist(cuts_list), origin = "1970-01-01 00:00",
+    tz = tz(unique(data_r$SurveyDate)[1]))
   data_r$bins_factor <- cut(data_r$recTime, breaks = unique(cuts),
     include.lowest = TRUE, right = FALSE)
 

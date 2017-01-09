@@ -15,7 +15,8 @@ Depends:
     scales,
     reshape2,
     shiny,
-    scales
+    scales,
+    dplyr
 Imports:
     RCurl,
     devtools

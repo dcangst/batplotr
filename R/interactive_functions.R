@@ -7,11 +7,16 @@
 #' @family interactive functions
 #' @export
 shiny_batPlots <- function(
+  lat_default = 47.4,
+  long_default = 8.52,
+  customCoord_default = FALSE,
+  time_zone_default = "UTC+1",
   option.list = list(
     shiny.launch.browser = TRUE,
     shiny.maxRequestSize = 100 * 1024 ^ 2,
     encoding = "UTF-8")
   ){
+  tz_def_n <- which(names(timeZones)=="UTC+1")
   shinyApp(
     onStart = function(options = option.list){
       options(options)
@@ -48,9 +53,10 @@ shiny_batPlots <- function(
             multiple = TRUE,
             accept = c(".xlsx", ".xls")
           ),
-          selectizeInput(
+          selectInput(
             "time_zone", "Zeitzone",
-            choices = OlsonNames(), selected = "UTC",multiple = FALSE
+            choices = as.list(timeZones),
+            selected = timeZones[tz_def_n], multiple = FALSE, selectize = FALSE
           ),
           selectizeInput(
             "project", "Standorte",
@@ -199,11 +205,11 @@ shiny_batPlots <- function(
                       tags$h4("GPS-Daten Optionen"),
                       checkboxInput("customCoord",
                         label = "eigene Koordinaten (in  Dezimalgrad)",
-                        value = FALSE),
+                        value = customCoord_default),
                       numericInput("lat", label = "Breite",
-                        value =  47.4, step = 0.1),
+                        value =  lat_default, step = 0.1),
                       numericInput("long", label = "Länge",
-                        value =  8.52, step = 0.1)
+                        value =  long_default, step = 0.1)
                     ),
                     column(4,
                       tags$h4("Generelle Plotoptionen"),
@@ -287,16 +293,17 @@ shiny_batPlots <- function(
         )
 
         #update DateRange
+        date_range <- force_tz(range(dataInput()$SurveyDate), tzone = "UTC")
         if (input$tabs == "NightPlot"){
           updateDateRangeInput(session, "dates",
-            start = format(min(dataInput()$SurveyDate), "%Y-%m-%d"),
-            end = format(min(dataInput()$SurveyDate), "%Y-%m-%d")
+            start = date_range[1],
+            end = date_range[1]
           )
         }
         if (input$tabs == "PeriodPlot"){
           updateDateRangeInput(session, "dates",
-            start = format(min(dataInput()$SurveyDate), "%Y-%m-%d"),
-            end = format(max(dataInput()$SurveyDate), "%Y-%m-%d")
+            start = date_range[1],
+            end = date_range[2]
           )
         }
         #update yAxis Input
@@ -416,7 +423,7 @@ shiny_batPlots <- function(
             collapse = ":")
           xlim <- as.POSIXct(
             c(paste(as.character(input$dates[1]), hhmm1),
-            paste(as.character(input$dates[2] + 1), hhmm2)))
+            paste(as.character(input$dates[2] + 1), hhmm2)), tz = input$time_zone)
         } else {
           xlim <- NULL
         }
@@ -426,10 +433,10 @@ shiny_batPlots <- function(
         } else {
           ylim <- NULL
         }
-
         plotData <- subset(data_r(), ProjectName %in% input$project)
+
         nightPlot(plotData,
-          day = input$dates,
+          day = with_tz(input$dates, tzone = input$time_zone),
           sel_species = input$species,
           x_limits = xlim,
           y_limits = ylim,
@@ -475,7 +482,6 @@ shiny_batPlots <- function(
           x_break_distance = x_breaks,
           y_break_distance = "2 hour",
           x_break_label = x_breaks_label,
-          time_zone = input$time_zone,
           text_size = input$text_size)
       }) #shiny_periodPlot
 

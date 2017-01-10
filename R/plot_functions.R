@@ -25,18 +25,13 @@ nightPlot <- function(plotData,
   plot_T_color = "black",
   n_ybreaks = 5,
   text_size = 16){
-
-  if (is.POSIXct(day) == FALSE){
-    day <- as.POSIXct(day, format = "%Y-%m-%d")
-  }
-
+  time_zone <- tz(unique(plotData$SurveyDate)[1])
   if (sel_species[1] == "every"){
-    plotData_sub <- subset(plotData, SurveyDate %in% day & species != "all")
+    plotData_sub <- dplyr::filter(plotData, SurveyDate == day & species != "all")
   } else {
-    plotData_sub <- subset(plotData, SurveyDate %in% day &
+    plotData_sub <- dplyr::filter(plotData, SurveyDate == day &
       species %in% sel_species)
   }
-
   if (is.null(x_limits)){
     x_limits <- c(min(plotData_sub$sunset) - 0.5 * 3600,
       max(plotData_sub$sunrise) + 0.5 * 3600)
@@ -50,7 +45,6 @@ nightPlot <- function(plotData,
     str_c(format(day, format = "%d.%m.%Y"), collapse = " - "))
 
   bin_width <- plotData$bin_length[1] * 60
-
   plotData_sub$t <- "Temperatur [°C]"
 
   nightPlot <- ggplot(plotData_sub,
@@ -66,7 +60,7 @@ nightPlot <- function(plotData,
     scale_x_datetime(
       limits = x_limits, breaks = date_breaks("2 hour"),
       minor_breaks = date_breaks("1 hour"),
-      labels = date_format("%H:%M")) +
+      labels = date_format("%H:%M", tz = time_zone)) +
     scale_fill_brewer(name = "Spezies", palette = "Set1") +
     scale_y_continuous(limits = y_limits,
       breaks = trans_breaks("identity", function(x) x, n = n_ybreaks)) +
@@ -117,10 +111,11 @@ periodPlot <- function(plotData,
   x_limits = NULL,
   y_limits = NULL,
   x_break_distance = "1 month",
-  y_break_distance = "2 hour",
+  y_break_distance = "1 hour",
   x_break_label = "%b",
-  time_zone = Sys.timezone(),
   text_size = 16){
+
+  time_zone <- tz(unique(plotData$SurveyDate)[1])
 
   if (is.POSIXct(start_date) == FALSE){
     start_date <- as.POSIXct(start_date, format = "%Y-%m-%d", tz = time_zone)
@@ -190,12 +185,12 @@ periodPlot <- function(plotData,
     facet_wrap(~ProjectName, ncol = 2) +
     scale_x_datetime(limits = x_limits,
       breaks = date_breaks(x_break_distance),
-      labels = date_format(x_break_label)) +
+      labels = date_format(x_break_label, tz = time_zone)) +
     scale_y_datetime(limits = y_limits,
       breaks = date_breaks(y_break_distance),
       minor_breaks = date_breaks("1 hour"),
-      labels = date_format("%H:%M")) +
-    labs(x = "Datum", y = "Uhrzeit [UTC]", title = plottitle) +
+      labels = date_format("%H:%M", tz = time_zone)) +
+    labs(x = "Datum", y = str_c("Uhrzeit (", time_zone,")"), title = plottitle) +
     theme(text = element_text(size = text_size))
 
   if (sel_species[1] != "every" & length(sel_species) == 1){

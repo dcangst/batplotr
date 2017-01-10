@@ -10,6 +10,7 @@
 #'  relevant quality scores
 #' @param quality_threshold sequences with species assignment quality below this
 #'  threshold will be discarded.
+#' @param time_zone time zone of timestamps
 #' @param shiny_progress display more progress info for shiny
 #' @param shiny_progress_n fraction of progres bar for multiple files
 #' @family data functions
@@ -17,8 +18,8 @@
 readBatscopeXLSX <- function(path = file.choose(),
   species_col_name = "AutoClass1",
   quality_col_name = "AutoClass1Qual",
-  time_zone = Sys.timezone(),
   quality_threshold = 0.8,
+  time_zone = "UTC",
   shiny_progress = FALSE,
   shiny_progress_n = 1
   ){
@@ -57,6 +58,11 @@ readBatscopeXLSX <- function(path = file.choose(),
   data_r <- dplyr::mutate_(data_r,.dots = setNames(list(str_c("species = ", species_col_name)), c("species")))
 
   data_r$temperature <- as.numeric(data_r$temperature)
+
+  data_r$ImportDate  <- force_tz(data_r$ImportDate, tzone = time_zone)
+  data_r$SurveyDate  <- force_tz(data_r$SurveyDate, tzone = time_zone)
+  data_r$recDate  <- force_tz(data_r$recDate, tzone = time_zone)
+  data_r$recTime  <- force_tz(data_r$recTime, tzone = time_zone)
 
   return(data_r)
 }
@@ -141,7 +147,7 @@ sumBatscopeData <- function(
 
   data_binned <- rbind(data_binned_bySpecies, data_binned_allSpecies)
 
-  data_binned$bins <- as.POSIXct(data_binned$bins_factor)
+  data_binned$bins <- as.POSIXct(data_binned$bins_factor, tz = tz(unique(data_r$SurveyDate)[1]))
 
   # GPS Koordinaten
 

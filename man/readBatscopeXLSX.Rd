@@ -5,8 +5,8 @@
 \title{read Batscope export}
 \usage{
 readBatscopeXLSX(path = file.choose(), species_col_name = "AutoClass1",
-  quality_col_name = "AutoClass1Qual", time_zone = Sys.timezone(),
-  quality_threshold = 0.8, shiny_progress = FALSE, shiny_progress_n = 1)
+  quality_col_name = "AutoClass1Qual", quality_threshold = 0.8,
+  time_zone = "UTC", shiny_progress = FALSE, shiny_progress_n = 1)
 }
 \arguments{
 \item{path}{filename}
@@ -19,6 +19,8 @@ relevant quality scores}
 
 \item{quality_threshold}{sequences with species assignment quality below this
 threshold will be discarded.}
+
+\item{time_zone}{time zone of timestamps}
 
 \item{shiny_progress}{display more progress info for shiny}
 

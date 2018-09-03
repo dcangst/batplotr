@@ -16,8 +16,9 @@
 #' @family data functions
 #' @export
 readBatscopeXLSX <- function(path = file.choose(),
-  species_col_name = "AutoClass1",
-  quality_col_name = "AutoClass1Qual",
+  batscope_version = "BatScope4",
+  species_col_name = "Auto Class 1",
+  quality_col_name = "Auto Class 1 Conf",
   quality_threshold = 0.8,
   time_zone = "UTC",
   shiny_progress = FALSE,
@@ -34,11 +35,35 @@ readBatscopeXLSX <- function(path = file.choose(),
   }
 
   # MODIFY DATA for use in R
-  data_r <- rawdata
+  if (batscope_version == "BatScope4") {
+    data_r <- data_frame(
+      project = rawdata$Project,
+      timestamp = ymd_hms(rawdata$Timestamp, tz = time_zone),
+      survey_date = as_datetime(ymd(lubridate::date(timestamp))),
+      latitude = rawdata$Latitude,
+      longitude = rawdata$Longitude,
+      temperature = rawdata$Temperature,
+      species = rawdata[[species_col_name]],
+      species_conf = rawdata[[quality_col_name]], 
+      n_calls = rawdata[[str_c(species_col_name, " Calls")]])
+  } else {
+    data_r <- data_frame(
+      project = rawdata$ProjectName,
+      timestamp = update(rawdata$recTime, year = year(rawdata$recDate),
+        month = month(rawdata$recDate), mday = day(rawdata$recDate)),
+      survey_date = as_datetime(ymd(lubridate::date(timestamp))),
+      latitude = rawdata$GPSLatitude,
+      longitude = rawdata$GPSLongitude,
+      temperature = rawdata$temperature,
+      species = rawdata[[species_col_name]],
+      species_conf = rawdata[[quality_col_name]], 
+      n_calls = rawdata$numCallsEstimated)
+  }
+  
 
   # discard sequences with low quality
   dim_qual_before <- dim(rawdata)
-  data_r <- dplyr::filter_(data_r, str_c(quality_col_name, ">=", quality_threshold))
+  data_r <- dplyr::filter(data_r,species_conf > quality_threshold)
   dim_qual_after <- dim(data_r)
   dim_qual_diff <- dim_qual_before[1] - dim_qual_after[1]
 
@@ -51,19 +76,6 @@ readBatscopeXLSX <- function(path = file.choose(),
   if (shiny_progress){
     incProgress(0.1 / shiny_progress_n, detail = "Daten formatieren...")
   }
-  # convert data_r/time format from excel to R
-  data_r$recTime <- update(data_r$recTime, year = year(data_r$recDate),
-   month = month(data_r$recDate), mday = day(data_r$recDate))
-
-  data_r <- dplyr::mutate_(data_r,.dots = setNames(list(str_c("species = ", species_col_name)), c("species")))
-
-  data_r$temperature <- as.numeric(data_r$temperature)
-
-  data_r$ImportDate  <- force_tz(data_r$ImportDate, tzone = time_zone)
-  data_r$SurveyDate  <- force_tz(data_r$SurveyDate, tzone = time_zone)
-  data_r$recDate  <- force_tz(data_r$recDate, tzone = time_zone)
-  data_r$recTime  <- force_tz(data_r$recTime, tzone = time_zone)
-
   return(data_r)
 }
 
@@ -102,13 +114,13 @@ sumBatscopeData <- function(
   # binning der Daten (in bin_length min Intervalle)
   n_cuts <- (24 + nacht_ende - nacht_start) * (60 / bin_length) + 1
   cuts_list <- list()
-  for (i in 1:length(unique(data_r$SurveyDate))){
-    cuts_list[[i]] <- seq(unique(data_r$SurveyDate)[i] + nacht_start * 60 * 60,
+  for (i in 1:length(unique(data_r$survey_date))){
+    cuts_list[[i]] <- seq(as_datetime(unique(data_r$survey_date)[i]) + nacht_start * 60 * 60,
       by = paste0(bin_length, " min"), length = n_cuts)
   }
   cuts <- as.POSIXct(unlist(cuts_list), origin = "1970-01-01 00:00",
-    tz = tz(unique(data_r$SurveyDate)[1]))
-  data_r$bins_factor <- cut(data_r$recTime, breaks = unique(cuts),
+    tz = tz(unique(data_r$survey_date)[1]))
+  data_r$bins_factor <- cut(data_r$timestamp, breaks = unique(cuts),
     include.lowest = TRUE, right = FALSE)
 
   # Zahlen der Events pro Tag, Mikrophon, species und bins
@@ -120,10 +132,10 @@ sumBatscopeData <- function(
   }
 
   data_binned_bySpecies <- plyr::ddply(data_r,
-    .(SurveyDate, ProjectName, species, bins_factor),
+    .(survey_date, project, species, bins_factor),
     summarize,
-    n_events = length(numCallsEstimated),
-    sum_nCalls = sum(numCallsEstimated),
+    n_events = length(n_calls),
+    sum_nCalls = sum(n_calls),
     meanT_BL = mean(temperature),
     .progress = progress)
 
@@ -136,10 +148,10 @@ sumBatscopeData <- function(
   }
 
   data_binned_allSpecies <- plyr::ddply(data_r,
-    .(SurveyDate, ProjectName, bins_factor),
+    .(survey_date, project, bins_factor),
     summarize,
-    n_events = length(numCallsEstimated),
-    sum_nCalls = sum(numCallsEstimated),
+    n_events = length(n_calls),
+    sum_nCalls = sum(n_calls),
     meanT_BL = mean(temperature),
     .progress = progress)
 
@@ -147,7 +159,7 @@ sumBatscopeData <- function(
 
   data_binned <- rbind(data_binned_bySpecies, data_binned_allSpecies)
 
-  data_binned$bins <- as.POSIXct(data_binned$bins_factor, tz = tz(unique(data_r$SurveyDate)[1]))
+  data_binned$bins <- as.POSIXct(data_binned$bins_factor, tz = tz(unique(data_r$survey_date)[1]))
 
   # GPS Koordinaten
 
@@ -158,9 +170,9 @@ sumBatscopeData <- function(
   }
 
   if (is.null(lat) | is.null(long)){
-    gps_coords <- ddply(data_r, .(ProjectName), summarize,
-      lat = mean(GPSLatitude[GPSValid == "yes"], na.rm = TRUE),
-      long = mean(GPSLongitude[GPSValid == "yes"], na.rm = TRUE)
+    gps_coords <- ddply(data_r, .(project), summarize,
+      lat = mean(latitude, na.rm = TRUE),
+      long = mean(longitude, na.rm = TRUE)
       )
     if (any(is.na(gps_coords))){
       stop("GPS Koordinaten nicht für alle Stationen vorhanden.")
@@ -171,7 +183,7 @@ sumBatscopeData <- function(
     }
   } else {
     gps_coords <- data.frame(
-      ProjectName = unique(data_r$ProjectName),
+      project = unique(data_r$project),
       lat,
       long)
     message("Manuelle Koordinaten verwendet.")
@@ -189,14 +201,14 @@ sumBatscopeData <- function(
 
   gps_matrix <- matrix(c(data_binned$long, data_binned$lat), ncol = 2)
   data_binned$sunset <- sunriset(
-    gps_matrix, data_binned$SurveyDate,
+    gps_matrix, as_datetime(data_binned$survey_date),
     direction = "sunset", POSIXct.out = TRUE)[, 2]
 
   data_binned$sunrise <- sunriset(
-    gps_matrix, data_binned$SurveyDate + 24 * 60 * 60,
+    gps_matrix, as_datetime(data_binned$survey_date) + 24 * 60 * 60,
     direction = "sunrise", POSIXct.out = TRUE)[, 2]
 
-  data_binned$ProjectName <- factor(data_binned$ProjectName)
+  data_binned$project <- factor(data_binned$project)
   data_binned$species <- factor(data_binned$species)
 
   data_binned$bin_length <- bin_length

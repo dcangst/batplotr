@@ -17,7 +17,7 @@
 #' @family plot functions
 #' @export
 nightPlot <- function(plotData,
-  day = min(plotData$SurveyDate),
+  day = min(plotData$survey_date),
   sel_species = "every",
   x_limits = NULL,
   y_limits = NULL,
@@ -25,11 +25,11 @@ nightPlot <- function(plotData,
   plot_T_color = "black",
   n_ybreaks = 5,
   text_size = 16){
-  time_zone <- tz(unique(plotData$SurveyDate)[1])
+  time_zone <- tz(unique(plotData$survey_date)[1])
   if (sel_species[1] == "every"){
-    plotData_sub <- dplyr::filter(plotData, SurveyDate == day & species != "all")
+    plotData_sub <- dplyr::filter(plotData, survey_date == day & species != "all")
   } else {
-    plotData_sub <- dplyr::filter(plotData, SurveyDate == day &
+    plotData_sub <- dplyr::filter(plotData, survey_date == day &
       species %in% sel_species)
   }
   if (is.null(x_limits)){
@@ -49,7 +49,7 @@ nightPlot <- function(plotData,
 
   nightPlot <- ggplot(plotData_sub,
     aes(bins, n_events, fill = species)) +
-    facet_wrap(~ProjectName, ncol = 2) +
+    facet_wrap(~project, ncol = 2) +
     geom_bar(stat = "identity", position = "dodge", width = bin_width) +
     geom_vline(
       aes(xintercept = as.numeric(sunset)),
@@ -69,7 +69,7 @@ nightPlot <- function(plotData,
 
   if (plot_T){
     nightPlot <- nightPlot +
-      geom_line(aes(bins, meanT_BL, group = ProjectName, colour = t)) +
+      geom_line(aes(bins, meanT_BL, group = project, colour = t)) +
       scale_color_manual(name = "", values = plot_T_color) +
       labs(x = "Uhrzeit",
         y = "Aktivität (# Sequencen) | Temperatur °C",
@@ -105,8 +105,8 @@ nightPlot <- function(plotData,
 #' @family plot functions
 #' @export
 periodPlot <- function(plotData,
-  start_date = floor_date(min(plotData$SurveyDate), "year"),
-  end_date = ceiling_date(max(plotData$SurveyDate), "year"),
+  start_date = floor_date(min(plotData$survey_date), "year"),
+  end_date = ceiling_date(max(plotData$survey_date), "year"),
   sel_species = "every",
   x_limits = NULL,
   y_limits = NULL,
@@ -115,7 +115,7 @@ periodPlot <- function(plotData,
   x_break_label = "%b",
   text_size = 16){
 
-  time_zone <- tz(unique(plotData$SurveyDate)[1])
+  time_zone <- tz(unique(plotData$survey_date)[1])
 
   if (is.POSIXct(start_date) == FALSE){
     start_date <- as.POSIXct(start_date, format = "%Y-%m-%d", tz = time_zone)
@@ -132,14 +132,14 @@ periodPlot <- function(plotData,
   print( interval(start_date, end_date, tz = time_zone))
   if (sel_species[1] == "every"){
     plotData_sub <- subset(plotData,
-      SurveyDate %within% interval(start_date, end_date, tz = time_zone) &
+      survey_date %within% interval(start_date, end_date, tz = time_zone) &
       species != "all")
     plottitle <- paste("Tagesaktivität",
       format(start_date, format = "%d.%m.%Y"),
       "bis", format(end_date, format = "%d.%m.%Y"), "| Summe aller Spezies")
   } else {
     plotData_sub <- subset(plotData,
-      SurveyDate %within% interval(start_date, end_date, tz = time_zone) &
+      survey_date %within% interval(start_date, end_date, tz = time_zone) &
       species %in% sel_species)
     if (length(sel_species) == 1){
       plottitle <- paste("Tagesaktivität",
@@ -157,18 +157,18 @@ periodPlot <- function(plotData,
   }
 
   period_nights <- seq(start_date, end_date, by = "days")
-  gps_coords <- plyr::ddply(plotData_sub, .(ProjectName), summarize,
+  gps_coords <- plyr::ddply(plotData_sub, .(project), summarize,
     lat = lat[1], long = long[1])
 
-  sun_data <- plyr::ddply(gps_coords, .(ProjectName), cbind, period_nights)
-  names(sun_data)[4] <- "SurveyDate"
+  sun_data <- plyr::ddply(gps_coords, .(project), cbind, period_nights)
+  names(sun_data)[4] <- "survey_date"
 
   gps_matrix <- matrix(c(sun_data$long, sun_data$lat), ncol = 2)
   sun_data$sunset <- sunriset(
-    gps_matrix, sun_data$SurveyDate,
+    gps_matrix, sun_data$survey_date,
     direction = "sunset", POSIXct.out = TRUE)[, 2]
   sun_data$sunrise <- sunriset(
-    gps_matrix, sun_data$SurveyDate + 24 * 60 * 60,
+    gps_matrix, sun_data$survey_date + 24 * 60 * 60,
     direction = "sunrise", POSIXct.out = TRUE)[, 2]
 
   plotData_final <- merge(plotData_sub, sun_data, all = TRUE)
@@ -177,12 +177,12 @@ periodPlot <- function(plotData,
   plotData_final$sunset_time <- timeOfNight(plotData_final$sunset)
 
   periodPlot <- ggplot(plotData_final,
-    aes(SurveyDate, time)) +
-    geom_line(aes(SurveyDate, sunrise_time),
+    aes(survey_date, time)) +
+    geom_line(aes(survey_date, sunrise_time),
       size = 0.3, color = "grey25") +
-    geom_line(aes(SurveyDate, sunset_time),
+    geom_line(aes(survey_date, sunset_time),
       size = 0.3, color = "grey25") +
-    facet_wrap(~ProjectName, ncol = 2) +
+    facet_wrap(~project, ncol = 2) +
     scale_x_datetime(limits = x_limits,
       breaks = date_breaks(x_break_distance),
       labels = date_format(x_break_label, tz = time_zone)) +

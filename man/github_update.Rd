@@ -20,4 +20,4 @@ checks for Package updates
 Other accessory functions: \code{\link{listHead}},
   \code{\link{timeOfNight}}
 }
-
+\concept{accessory functions}

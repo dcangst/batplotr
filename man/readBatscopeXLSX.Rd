@@ -4,8 +4,9 @@
 \alias{readBatscopeXLSX}
 \title{read Batscope export}
 \usage{
-readBatscopeXLSX(path = file.choose(), species_col_name = "AutoClass1",
-  quality_col_name = "AutoClass1Qual", quality_threshold = 0.8,
+readBatscopeXLSX(path = file.choose(), batscope_version = "BatScope4",
+  species_col_name = "Auto Class 1",
+  quality_col_name = "Auto Class 1 Conf", quality_threshold = 0.8,
   time_zone = "UTC", shiny_progress = FALSE, shiny_progress_n = 1)
 }
 \arguments{
@@ -34,4 +35,4 @@ the right format.
 Other data functions: \code{\link{readBatscopeXLSX_multiple}},
   \code{\link{sumBatscopeData}}
 }
-
+\concept{data functions}

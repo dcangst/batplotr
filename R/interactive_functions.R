@@ -49,6 +49,11 @@ shiny_batPlots <- function(
                 tags$style(type = "text/css",
                   "label { font-weight: normal; }")
           ),
+          selectInput(
+            "batscopeVersion", "BatScope Version",
+            choices = c('BatScope3', 'BatScope4'),
+            selected = 'BatScope4', multiple = FALSE, selectize = FALSE
+          ),
           fileInput("file1", "BatScope xlsx auswählen",
             multiple = TRUE,
             accept = c(".xlsx", ".xls")
@@ -187,14 +192,12 @@ shiny_batPlots <- function(
                         value = 0.8,
                         min = 0,
                         max = 1),
-                      selectizeInput("speciesColName",
+                      textInput("speciesColName",
                         label = "Kolonnenname Spezies",
-                        choices = "AutoClass1",
-                        selected = "AutoClass1"),
-                      selectizeInput("speciesQualName",
+                        value = "Auto Class 1"),
+                      textInput("speciesQualName",
                         label = "Kolonnenname Spezies Qualität",
-                        choices = "AutoClass1Qual",
-                        selected = "AutoClass1Qual"),
+                        value = "Auto Class 1 Conf"),
                       tags$br(),
                       sliderInput("bins", "Länge der bins",
                         value = 5,
@@ -258,7 +261,7 @@ shiny_batPlots <- function(
           need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
         # update Projectnames
-        projectNames <- unique(dataInput()$ProjectName)
+        projectNames <- unique(dataInput()$project)
         names(projectNames) <- projectNames
         project_options <- as.list(projectNames)
 
@@ -283,17 +286,8 @@ shiny_batPlots <- function(
         names(colNames) <- colNames
         col_options <- as.list(colNames)
 
-        updateSelectizeInput(session, "speciesColName",
-          choices = col_options,
-          selected = "AutoClass1"
-        )
-        updateSelectizeInput(session, "speciesQualName",
-          choices = col_options,
-          selected = "AutoClass1Qual"
-        )
-
         #update DateRange
-        date_range <- force_tz(range(dataInput()$SurveyDate), tzone = "UTC")
+        date_range <- force_tz(range(dataInput()$survey_date), tzone = "UTC")
         if (input$tabs == "NightPlot"){
           updateDateRangeInput(session, "dates",
             start = date_range[1],
@@ -315,6 +309,23 @@ shiny_batPlots <- function(
         )
       }) #observe
 
+      observeEvent(input$batscopeVersion,{
+        if(input$batscopeVersion == 'BatScope4'){
+          species_col_name <- "Auto Class 1"
+          quality_col_name <- "Auto Class 1 Conf"
+        } else {
+          species_col_name <- "AutoClass1"
+          quality_col_name <- "AutoClass1Qual"
+        }
+
+        updateTextInput(session, "speciesColName",
+          value = species_col_name
+        )
+        updateTextInput(session, "speciesQualName",
+          value = quality_col_name
+        )
+      })
+
       dataInput <- reactive({
         validate(
           need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
@@ -328,6 +339,7 @@ shiny_batPlots <- function(
           value = 0.1, {
             data <- readBatscopeXLSX_multiple(
               path = paste0(pathname, ".xlsx"),
+              batscope_version = input$batscopeVersion,
               species_col_name = input$speciesColName,
               quality_col_name = input$speciesQualName,
               time_zone = input$time_zone,
@@ -339,10 +351,11 @@ shiny_batPlots <- function(
       }) #dataInput
 
       data_r <- reactive({
-        gps_coords <- ddply(dataInput(), .(ProjectName), summarize,
-          lat = mean(GPSLatitude[GPSValid == "yes"], na.rm = TRUE),
-          long = mean(GPSLongitude[GPSValid == "yes"], na.rm = TRUE)
+        gps_coords <- ddply(dataInput(), .(project), summarize,
+          lat = mean(latitude, na.rm = TRUE),
+          long = mean(longitude, na.rm = TRUE)
         )
+        print(gps_coords)
         print( (any(is.na(gps_coords)) == FALSE | input$customCoord == TRUE))
         validate(
           need( (any(is.na(gps_coords)) == FALSE | input$customCoord == TRUE),
@@ -378,7 +391,7 @@ shiny_batPlots <- function(
         validate(
           need(is.null(data_r) != TRUE, "Bitte BatScope xlsx auswählen")
         )
-        data_sum <- ddply(data_r(), .(ProjectName, SurveyDate), summarize,
+        data_sum <- ddply(data_r(), .(project, survey_date), summarize,
           n_events_day = sum(n_events))
       })
 
@@ -403,7 +416,7 @@ shiny_batPlots <- function(
       shiny_nightPlot <- reactive({
         validate(
           need(as.character(input$dates[1]) %in%
-            format(data_r()$SurveyDate, "%Y-%m-%d"),
+            format(data_r()$survey_date, "%Y-%m-%d"),
             "Keine Datenpunkte für ausgewähltes Datum")
         )
         if (input$customScaleX){
@@ -433,7 +446,7 @@ shiny_batPlots <- function(
         } else {
           ylim <- NULL
         }
-        plotData <- subset(data_r(), ProjectName %in% input$project)
+        plotData <- subset(data_r(), project %in% input$project)
 
         nightPlot(plotData,
           day = with_tz(input$dates, tzone = input$time_zone),
@@ -473,7 +486,7 @@ shiny_batPlots <- function(
         x_breaks <- paste(input$x_breaks_num, input$x_breaks_unit)
         print(x_breaks)
         x_breaks_label <- input$x_breaks_label
-        plotData <- subset(data_r(), ProjectName %in% input$project)
+        plotData <- subset(data_r(), project %in% input$project)
         periodPlot(plotData,
           start_date = as.character(input$dates[1]),
           end_date = as.character(input$dates[2]),

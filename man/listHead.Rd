@@ -18,4 +18,4 @@ Displays the first \code{n} rows of a data.frame
 Other accessory functions: \code{\link{github_update}},
   \code{\link{timeOfNight}}
 }
-
+\concept{accessory functions}

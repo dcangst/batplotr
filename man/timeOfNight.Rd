@@ -18,4 +18,4 @@ corrects for daylight saving time.
 Other accessory functions: \code{\link{github_update}},
   \code{\link{listHead}}
 }
-
+\concept{accessory functions}

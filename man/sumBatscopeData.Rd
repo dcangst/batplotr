@@ -32,4 +32,4 @@ summarizes the Batscope Data by nights and bins
 Other data functions: \code{\link{readBatscopeXLSX_multiple}},
   \code{\link{readBatscopeXLSX}}
 }
-
+\concept{data functions}

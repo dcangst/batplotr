@@ -4,8 +4,8 @@
 \alias{periodPlot}
 \title{Period Plot}
 \usage{
-periodPlot(plotData, start_date = floor_date(min(plotData$SurveyDate),
-  "year"), end_date = ceiling_date(max(plotData$SurveyDate), "year"),
+periodPlot(plotData, start_date = floor_date(min(plotData$survey_date),
+  "year"), end_date = ceiling_date(max(plotData$survey_date), "year"),
   sel_species = "every", x_limits = NULL, y_limits = NULL,
   x_break_distance = "1 month", y_break_distance = "1 hour",
   x_break_label = "\%b", text_size = 16)
@@ -49,4 +49,4 @@ Plot activity (number of calls) of each night of a given period.
 \seealso{
 Other plot functions: \code{\link{nightPlot}}
 }
-
+\concept{plot functions}

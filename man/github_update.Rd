@@ -17,7 +17,8 @@ github_update(package, repo, ref = "master")
 checks for Package updates
 }
 \seealso{
-Other accessory functions: \code{\link{listHead}},
-  \code{\link{timeOfNight}}
+Other accessory functions: 
+\code{\link{listHead}()},
+\code{\link{timeOfNight}()}
 }
 \concept{accessory functions}

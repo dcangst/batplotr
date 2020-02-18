@@ -4,8 +4,7 @@
 \alias{readBatscopeXLSX_multiple}
 \title{Read all BatScope Export Files in Folder}
 \usage{
-readBatscopeXLSX_multiple(path = file.choose(), read_folder = FALSE,
-  ...)
+readBatscopeXLSX_multiple(path = file.choose(), read_folder = FALSE, ...)
 }
 \arguments{
 \item{path}{path to one file within folder or a vector of path, defaults to choose.file()}
@@ -19,7 +18,8 @@ Wrapper for readBatscopeXLSX to read multiple \code{xlsx} files or all files
 within a folder
 }
 \seealso{
-Other data functions: \code{\link{readBatscopeXLSX}},
-  \code{\link{sumBatscopeData}}
+Other data functions: 
+\code{\link{readBatscopeXLSX}()},
+\code{\link{sumBatscopeData}()}
 }
 \concept{data functions}

@@ -13,13 +13,6 @@ library(devtools)
 install_github("dcangst/batplotr")
 ```
 
-or to get a specific version:
-
-```r
-library(devtools)
-install_github("dcangst/batplotr", ref="v0.1")
-```
-
 ## Standalone Shiny Web App
 
 The package includes the function `shiny_batPlots()`. It launches a shiny web app that replicates most futures of the package in a web app. For ease of use you can set up a script to launch the web app directly from your computer.

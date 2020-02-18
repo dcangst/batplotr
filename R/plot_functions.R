@@ -116,6 +116,7 @@ periodPlot <- function(plotData,
   text_size = 16){
 
   time_zone <- tz(unique(plotData$survey_date)[1])
+  print(time_zone)
 
   if (is.POSIXct(start_date) == FALSE){
     start_date <- as.POSIXct(start_date, format = "%Y-%m-%d", tz = time_zone)

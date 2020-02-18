@@ -3,7 +3,6 @@
 \docType{package}
 \name{batplotr}
 \alias{batplotr}
-\alias{batplotr-package}
 \title{batplotr
 Simple BatScope Data visualization}
 \description{

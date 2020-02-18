@@ -4,8 +4,14 @@
 \alias{sumBatscopeData}
 \title{Summarize Batscope data_r}
 \usage{
-sumBatscopeData(data_r, bin_length = 5, lat = NULL, long = NULL,
-  progress = "text", shiny_progress = FALSE)
+sumBatscopeData(
+  data_r,
+  bin_length = 5,
+  lat = NULL,
+  long = NULL,
+  progress = "text",
+  shiny_progress = FALSE
+)
 }
 \arguments{
 \item{data_r}{data.frame generated with \code{\link{readBatscopeXLSX}}}
@@ -29,7 +35,8 @@ sumBatscopeData(data_r, bin_length = 5, lat = NULL, long = NULL,
 summarizes the Batscope Data by nights and bins
 }
 \seealso{
-Other data functions: \code{\link{readBatscopeXLSX_multiple}},
-  \code{\link{readBatscopeXLSX}}
+Other data functions: 
+\code{\link{readBatscopeXLSX_multiple}()},
+\code{\link{readBatscopeXLSX}()}
 }
 \concept{data functions}

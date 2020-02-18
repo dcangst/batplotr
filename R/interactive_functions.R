@@ -395,16 +395,16 @@ shiny_batPlots <- function(
           n_events_day = sum(n_events))
       })
 
-      output$data_table <- renderDataTable({
+      output$data_table <- DT::renderDataTable({
         validate(
           need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )
-        data_r()[, c(1, 2, 8, 3, 5, 6, 7, 11, 12)]
+        data_r()
         },
         options = list(lengthMenu = c(10, 25, 50, 100), pageLength = 10)
       ) #output$data_table
 
-      output$sum_table <- renderDataTable({
+      output$sum_table <- DT::renderDataTable({
         validate(
           need(is.null(input$file1) != TRUE, "Bitte BatScope xlsx auswählen")
         )

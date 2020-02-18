@@ -4,10 +4,14 @@
 \alias{shiny_batPlots}
 \title{batPlotR}
 \usage{
-shiny_batPlots(lat_default = 47.4, long_default = 8.52,
-  customCoord_default = FALSE, time_zone_default = "UTC+1",
-  option.list = list(shiny.launch.browser = TRUE, shiny.maxRequestSize =
-  100 * 1024^2, encoding = "UTF-8"))
+shiny_batPlots(
+  lat_default = 47.4,
+  long_default = 8.52,
+  customCoord_default = FALSE,
+  time_zone_default = "UTC+1",
+  option.list = list(shiny.launch.browser = TRUE, shiny.maxRequestSize = 100 * 1024^2,
+    encoding = "UTF-8")
+)
 }
 \arguments{
 \item{option.list}{a list of global shiny options}

@@ -15,7 +15,8 @@ gives back a \code{POSIXct} object with date 1900-01-01 (evening) or
 corrects for daylight saving time.
 }
 \seealso{
-Other accessory functions: \code{\link{github_update}},
-  \code{\link{listHead}}
+Other accessory functions: 
+\code{\link{github_update}()},
+\code{\link{listHead}()}
 }
 \concept{accessory functions}

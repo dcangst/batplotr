@@ -34,38 +34,3 @@ listHead <- function(list, n = 6){
     print(head(list[[i]], n))
   }
 }
-
-#' Check for Package updates on GitHub
-#' 
-#' checks for Package updates
-#'
-#' @param package the name of the package hosted at \link{repo}
-#' @param repo Repository address in the format \link{username/repo }
-#' @param ref Desired git reference. Defaults to "master".
-#' @family accessory functions
-#' @export 
-github_update <- function(package, repo, ref = "master"){
-  url <- paste0("https://raw.githubusercontent.com/",
-    repo, "/", ref, "/DESCRIPTION")
-  content <- tryCatch(RCurl::getURL(url),
-    error = function(Cond){
-      return(FALSE)
-    },
-    warning = function(Cond){
-      return(FALSE)
-    })
-  if (content == FALSE){
-    return("cannot update. no connection?")
-  }
-
-  version_git <- gsub(".*\\Version: (.*)\nA.*", "\\1", content)
-  version_loc <- as.character(packageVersion(package))
-  if (version_git != version_loc){
-    message("A new version of batplotr is available!\n",
-      "(", version_git, ", you have ", version_loc, ")", sep = "")
-    devtools::install_github(repo, dependencies = TRUE)
-    return(paste("batplotr updated to version", version_git))
-  } else {
-    return(paste(package, "is up to date."))
-  }
-}

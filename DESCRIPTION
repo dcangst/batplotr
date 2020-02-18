@@ -19,8 +19,7 @@ Depends:
     dplyr,
     DT
 Imports:
-    RCurl,
-    devtools
+    RCurl
 License: file LICENSE
 LazyData: true
 Encoding: UTF-8

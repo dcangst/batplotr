@@ -5,7 +5,7 @@ Authors@R: person("Daniel", "Angst", , "dcangst@gmail.com",
     role = c("aut", "cre"))
 Description: read data from batLogger export and visualize it
 Depends:
-    R (>= 3.3.2),
+    R (>= 3.6.2),
     maptools,
     plyr,
     ggplot2,
@@ -18,8 +18,6 @@ Depends:
     scales,
     dplyr,
     DT
-Imports:
-    RCurl
 License: file LICENSE
 LazyData: true
 Encoding: UTF-8

@@ -16,7 +16,6 @@ corrects for daylight saving time.
 }
 \seealso{
 Other accessory functions: 
-\code{\link{github_update}()},
 \code{\link{listHead}()}
 }
 \concept{accessory functions}

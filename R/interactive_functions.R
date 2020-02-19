@@ -16,7 +16,7 @@ shiny_batPlots <- function(
     shiny.maxRequestSize = 100 * 1024 ^ 2,
     encoding = "UTF-8")
   ){
-  tz_def_n <- which(names(timeZones)=="UTC+1")
+  tz_def_n <- which(names(timeZones) == time_zone_default)
   shinyApp(
     onStart = function(options = option.list){
       options(options)

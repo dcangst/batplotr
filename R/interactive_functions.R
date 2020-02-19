@@ -143,7 +143,7 @@ shiny_batPlots <- function(
               div(style = "display:inline-block",
                 textInput("save_name_night", label = NULL,
                   value = paste0(
-                    format(Sys.Date(), "%Y%m%d"), "_nightplot.pdf")
+                    format(Sys.Date(), "%Y%m%d"), "_nightplot")
                   )
                 ),
               div(style = "display:inline-block",
@@ -155,7 +155,7 @@ shiny_batPlots <- function(
               div(style = "display:inline-block",
                 textInput("save_name_period", label = NULL,
                   value = paste0(
-                    format(Sys.Date(), "%Y%m%d"), "_periodplot.pdf")
+                    format(Sys.Date(), "%Y%m%d"), "_periodplot")
                   )
                 ),
               div(style = "display:inline-block",
@@ -521,28 +521,22 @@ shiny_batPlots <- function(
       )
 
       output$downloadNightPlot <-  downloadHandler(
-        filename = input$save_name_night,
+        filename = str_c(input$save_name_night,".pdf"),
         content = function(file) {
-          device <- function(..., width, height){
-            grDevices::pdf(..., width = width, height = height, pointsize = 1)
-          }
           output_plot <- shiny_nightPlot() +
             theme(text = element_text(size = input$save_text_size))
-          ggsave(file, plot = output_plot, device = device,
+          ggsave(file, plot = output_plot, device = "pdf",
             width = input$save_width / 2.54, height = input$save_heigth / 2.54,
             scale = 1, dpi = 72)
         }
       )
 
       output$downloadPeriodPlot <-  downloadHandler(
-        filename = input$save_name_period,
+        filename = str_c(input$save_name_period, ".pdf"),
         content = function(file) {
-          device <- function(..., width, height){
-            grDevices::pdf(..., width = width, height = height, pointsize = 1)
-          }
           output_plot <- shiny_periodPlot() +
             theme(text = element_text(size = input$save_text_size))
-          ggsave(file, plot = output_plot, device = device,
+          ggsave(file, plot = output_plot, device = "pdf",
             width = input$save_width / 2.54, height = input$save_heigth / 2.54,
             scale = 1, dpi = 72)
         }

@@ -40,7 +40,7 @@ readBatscopeXLSX <- function(path = file.choose(),
     data_r <- data_frame(
       project = rawdata$Project,
       timestamp = ymd_hms(rawdata$Timestamp, tz = time_zone),
-      survey_date = as_datetime(ymd(lubridate::date(timestamp), tz = time_zone)),
+      survey_date = ymd(lubridate::date(timestamp), tz = time_zone),
       latitude = rawdata$Latitude,
       longitude = rawdata$Longitude,
       temperature = rawdata$Temperature,
@@ -60,7 +60,6 @@ readBatscopeXLSX <- function(path = file.choose(),
       species_conf = rawdata[[quality_col_name]],
       n_calls = rawdata$numCallsEstimated)
   }
-  print(data_r)
 
   # discard sequences with low quality
   dim_qual_before <- dim(rawdata)

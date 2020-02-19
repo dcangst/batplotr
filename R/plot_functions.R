@@ -64,7 +64,7 @@ nightPlot <- function(plotData,
     scale_fill_brewer(name = "Spezies", palette = "Set1") +
     scale_y_continuous(limits = y_limits,
       breaks = trans_breaks("identity", function(x) x, n = n_ybreaks)) +
-    labs(x = "Uhrzeit", y = "Aktivität (# Sequencen)", title = plottitle) +
+    labs(x = "Uhrzeit", y = "Aktivität (# Sequenzen)", title = plottitle) +
     theme(text = element_text(size = text_size))
 
   if (plot_T){
@@ -191,7 +191,7 @@ periodPlot <- function(plotData,
       breaks = date_breaks(y_break_distance),
       minor_breaks = date_breaks("1 hour"),
       labels = date_format("%H:%M", tz = time_zone)) +
-    labs(x = "Datum", y = str_c("Uhrzeit (", time_zone,")"), title = plottitle) +
+    labs(x = "Datum", y = str_c("Uhrzeit (", time_zone,")"), title = plottitle, size = "# Events", color = "Spezies") +
     theme(text = element_text(size = text_size))
 
   if (sel_species[1] != "every" & length(sel_species) == 1){

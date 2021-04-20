@@ -2,7 +2,7 @@
 
 ## About `batplotR`
 
-`batplotR` is a `R` package to visualize data generated with [BatScope](http://www.wsl.ch/dienstleistungen/produkte/software/batscope/index_DE) and allows simple visualization of short (one night) and long (many nights) time-series of ultrasound calls recorded with a BatLogger. All you need is a Excel file export from BatScope. Most functions can be accessed from within a [Shiny](http://shiny.rstudio.com) web-app.
+`batplotR` is a `R` package to visualize data generated with [BatScope](https://www.wsl.ch/de/services-und-produkte/software-websites-und-apps/batscope-4.html) and allows simple visualization of short (one night) and long (many nights) time-series of ultrasound calls recorded with a BatLogger. All you need is a Excel file export from BatScope. Most functions can be accessed from within a [Shiny](http://shiny.rstudio.com) web-app.
 
 ## How to install
 

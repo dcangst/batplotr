@@ -40,7 +40,12 @@ readBatscopeXLSX <- function(path = file.choose(),
     data_r <- data_frame(
       project = rawdata$Project,
       timestamp = ymd_hms(rawdata$Timestamp, tz = time_zone),
-      survey_date = ymd(lubridate::date(timestamp), tz = time_zone),
+      survey_date = 
+        if_else(
+          hour(timestamp) > 12,
+          ymd(lubridate::date(timestamp), tz = time_zone),
+          ymd(lubridate::date(timestamp) - 1, tz = time_zone)
+        ),
       latitude = rawdata$Latitude,
       longitude = rawdata$Longitude,
       temperature = rawdata$Temperature,
@@ -52,7 +57,12 @@ readBatscopeXLSX <- function(path = file.choose(),
       project = rawdata$ProjectName,
       timestamp = update(rawdata$recTime, year = year(rawdata$recDate),
         month = month(rawdata$recDate), mday = day(rawdata$recDate), tzs = time_zone),
-      survey_date = ymd(lubridate::date(timestamp), tz = time_zone),
+      survey_date = 
+        if_else(
+          hour(timestamp) > 12,
+          ymd(lubridate::date(timestamp), tz = time_zone),
+          ymd(lubridate::date(timestamp) - 1, tz = time_zone)
+        ),
       latitude = rawdata$GPSLatitude,
       longitude = rawdata$GPSLongitude,
       temperature = rawdata$temperature,

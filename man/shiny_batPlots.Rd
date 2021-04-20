@@ -9,12 +9,12 @@ shiny_batPlots(
   long_default = 8.52,
   customCoord_default = FALSE,
   time_zone_default = "UTC+1",
-  option.list = list(shiny.launch.browser = TRUE, shiny.maxRequestSize = 100 * 1024^2,
+  option_list = list(shiny.launch.browser = TRUE, shiny.maxRequestSize = 100 * 1024^2,
     encoding = "UTF-8")
 )
 }
 \arguments{
-\item{option.list}{a list of global shiny options}
+\item{option_list}{a list of global shiny options}
 }
 \value{
 launches a WebApp

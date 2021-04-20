@@ -39,7 +39,7 @@ the right format.
 }
 \seealso{
 Other data functions: 
-\code{\link{readBatscopeXLSX_multiple}()},
+\code{\link{readBatscopeXLSXmultiple}()},
 \code{\link{sumBatscopeData}()}
 }
 \concept{data functions}

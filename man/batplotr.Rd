@@ -5,10 +5,6 @@
 \alias{batplotr}
 \title{batplotr
 Simple BatScope Data visualization}
-\description{
-batplotr
-Simple BatScope Data visualization
-}
 \section{Data functions}{
 
 

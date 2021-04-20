@@ -26,12 +26,12 @@ beginning of the year in which the first data were aquired.}
 \item{end_date}{in POSIXct format or \code{"YYYY-MM-DD"}, defaults to the end
 of the year in which the last data were aquired.}
 
-\item{sel_species}{species_name or vector of species to plot, use "every" to 
+\item{sel_species}{species_name or vector of species to plot, use "every" to
 plot all species individually (differentiated by color)}
 
 \item{x_limits}{x-axis limits, NULL (default) or a POSIXct vector of length 2}
 
-\item{y_limits}{y-axis limits, NULL (default) or a character or POSIXct 
+\item{y_limits}{y-axis limits, NULL (default) or a character or POSIXct
 vector of length 2 with format
 \code{c("1900-01-01 HH:MM","1900-01-02 HH:MM")}}
 

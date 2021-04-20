@@ -17,14 +17,13 @@
 #' @export
 
 readBatscopeXLSX <- function(path = file.choose(),
-  batscope_version = "BatScope4",
-  species_col_name = "Auto Class 1",
-  quality_col_name = "Auto Class 1 Conf",
-  quality_threshold = 0.8,
-  time_zone = "UTC",
-  shiny_progress = FALSE,
-  shiny_progress_n = 1) {
-
+                             batscope_version = "BatScope4",
+                             species_col_name = "Auto Class 1",
+                             quality_col_name = "Auto Class 1 Conf",
+                             quality_threshold = 0.8,
+                             time_zone = "UTC",
+                             shiny_progress = FALSE,
+                             shiny_progress_n = 1) {
   message("\n", path, "\nwird eingelesen, kann eine Weile dauern...\n")
   if (shiny_progress == TRUE) {
     shiny::incProgress(0.1 / shiny_progress_n, detail = ".xlsx lesen..")
@@ -40,7 +39,7 @@ readBatscopeXLSX <- function(path = file.choose(),
     data_r <- data_frame(
       project = rawdata$Project,
       timestamp = ymd_hms(rawdata$Timestamp, tz = time_zone),
-      survey_date = 
+      survey_date =
         if_else(
           hour(timestamp) > 12,
           ymd(lubridate::date(timestamp), tz = time_zone),
@@ -51,13 +50,16 @@ readBatscopeXLSX <- function(path = file.choose(),
       temperature = rawdata$Temperature,
       species = rawdata[[species_col_name]],
       species_conf = rawdata[[quality_col_name]],
-      n_calls = rawdata[[str_c(species_col_name, " Calls")]])
+      n_calls = rawdata[[str_c(species_col_name, " Calls")]]
+    )
   } else {
     data_r <- data_frame(
       project = rawdata$ProjectName,
-      timestamp = update(rawdata$recTime, year = year(rawdata$recDate),
-        month = month(rawdata$recDate), mday = day(rawdata$recDate), tzs = time_zone),
-      survey_date = 
+      timestamp = update(rawdata$recTime,
+        year = year(rawdata$recDate),
+        month = month(rawdata$recDate), mday = day(rawdata$recDate), tzs = time_zone
+      ),
+      survey_date =
         if_else(
           hour(timestamp) > 12,
           ymd(lubridate::date(timestamp), tz = time_zone),
@@ -68,7 +70,8 @@ readBatscopeXLSX <- function(path = file.choose(),
       temperature = rawdata$temperature,
       species = rawdata[[species_col_name]],
       species_conf = rawdata[[quality_col_name]],
-      n_calls = rawdata$numCallsEstimated)
+      n_calls = rawdata$numCallsEstimated
+    )
   }
 
   # discard sequences with low quality
@@ -81,93 +84,101 @@ readBatscopeXLSX <- function(path = file.choose(),
   message("\nDiscarded ", dim_qual_diff, " of ",
     dim_qual_before[1], " sequences (",
     (dim_qual_diff / dim_qual_before[1]) * 100, "%); ", dim_qual_after[1],
-    " remaining\n", sep = "")
+    " remaining\n",
+    sep = ""
+  )
 
-  if (shiny_progress){
+  if (shiny_progress) {
     incProgress(0.1 / shiny_progress_n, detail = "Daten formatieren...")
   }
   return(data_r)
 }
 
 #' Summarize Batscope data_r
-#' 
+#'
 #' summarizes the Batscope Data by nights and bins
 #'
 #' @param data_r data.frame generated with \code{\link{readBatscopeXLSX}}
 #' @param bin_width length of bins in min
 #' @param lat vector of GPS latitudes for the stations
-#'   (recycled if needed). If NULL (default) the logged GPS data will be used 
+#'   (recycled if needed). If NULL (default) the logged GPS data will be used
 #'   (averaged for each station)
 #' @param long vector of GPS longitudes for the stations
-#'   (recycled if needed). If NULL (default) the logged GPS data will be used 
-#'   (averaged for each station) 
-#' @param progress name of the progress bar to use, see 
+#'   (recycled if needed). If NULL (default) the logged GPS data will be used
+#'   (averaged for each station)
+#' @param progress name of the progress bar to use, see
 #'   \code{\link[plyr]{create_progress_bar}}
 #' @param shiny_progress display more progress info for shiny
 #' @family data functions
 #' @export
-sumBatscopeData <- function(
-  data_r,
-  bin_length = 5,
-  lat = NULL,
-  long = NULL,
-  progress = "text",
-  shiny_progress = FALSE
-  ){
+sumBatscopeData <- function(data_r,
+                            bin_length = 5,
+                            lat = NULL,
+                            long = NULL,
+                            progress = "text",
+                            shiny_progress = FALSE) {
   # wann startet die nacht und wann endet sie. Wird nur fuer binning
   # verwendet.
   nacht_start <- 13
   nacht_ende <- 12
-  if (shiny_progress){
+  if (shiny_progress) {
     incProgress(0.1, detail = "Binning...")
   }
   # binning der Daten (in bin_length min Intervalle)
   n_cuts <- (24 + nacht_ende - nacht_start) * (60 / bin_length) + 1
   cuts_list <- list()
-  for (i in 1:length(unique(data_r$survey_date))){
+  for (i in seq_len(length(unique(data_r$survey_date)))) {
     cuts_list[[i]] <- seq(as_datetime(unique(data_r$survey_date)[i]) + nacht_start * 60 * 60,
-      by = paste0(bin_length, " min"), length = n_cuts)
+      by = paste0(bin_length, " min"), length = n_cuts
+    )
   }
-  cuts <- as.POSIXct(unlist(cuts_list), origin = "1970-01-01 00:00",
-    tz = tz(unique(data_r$timestamp)[1]))
-  data_r$bins_factor <- cut(data_r$timestamp, breaks = unique(cuts),
-    include.lowest = TRUE, right = FALSE)
+  cuts <- as.POSIXct(unlist(cuts_list),
+    origin = "1970-01-01 00:00",
+    tz = tz(unique(data_r$timestamp)[1])
+  )
+  data_r$bins_factor <- cut(data_r$timestamp,
+    breaks = unique(cuts),
+    include.lowest = TRUE, right = FALSE
+  )
 
   # Zahlen der Events pro Tag, Mikrophon, species und bins
-  if (shiny_progress){
+  if (shiny_progress) {
     incProgress(0.2,
-      detail = "Zusammenfassung nach Tag, Project, Species und Bins...")
+      detail = "Zusammenfassung nach Tag, Project, Species und Bins..."
+    )
   } else {
     cat("Zusammenfassung nach Tag, Project, Spezies und Bins...\n")
   }
 
-  data_binned_bySpecies <- plyr::ddply(data_r,
+  data_binned_by_species <- plyr::ddply(data_r,
     .(survey_date, project, species, bins_factor),
     summarize,
     n_events = length(n_calls),
     sum_nCalls = sum(n_calls),
     meanT_BL = mean(temperature),
-    .progress = progress)
+    .progress = progress
+  )
 
   # Zahlen der Events pro Tag, Mikrophon, und bins (alle species)
 
-  if (shiny_progress){
+  if (shiny_progress) {
     incProgress(0.2, detail = "Zusammenfassung Total aller species...")
   } else {
     cat("Zusammenfassung Total aller species...\n")
   }
 
-  data_binned_allSpecies <- plyr::ddply(data_r,
+  data_binned_all_species <- plyr::ddply(data_r,
     .(survey_date, project, bins_factor),
     summarize,
     n_events = length(n_calls),
     sum_nCalls = sum(n_calls),
     meanT_BL = mean(temperature),
-    .progress = progress)
+    .progress = progress
+  )
 
-  data_binned_allSpecies$species <- factor("all")
+  data_binned_all_species$species <- factor("all")
 
-  data_binned <- rbind(data_binned_bySpecies, data_binned_allSpecies)
+  data_binned <- rbind(data_binned_by_species, data_binned_all_species)
 
   data_binned$bins <- as.POSIXct(data_binned$bins_factor, tz = tz(unique(data_r$timestamp)[1]))
 
@@ -179,12 +190,12 @@ sumBatscopeData <- function(
     cat("GPS Koordinaten bearbeiten...\n")
   }
 
-  if (is.null(lat) | is.null(long)){
+  if (is.null(lat) | is.null(long)) {
     gps_coords <- ddply(data_r, .(project), summarize,
       lat = mean(latitude, na.rm = TRUE),
       long = mean(longitude, na.rm = TRUE)
-      )
-    if (any(is.na(gps_coords))){
+    )
+    if (any(is.na(gps_coords))) {
       stop("GPS Koordinaten nicht für alle Stationen vorhanden.")
       stop("Bitte manuell eingeben.")
     } else {
@@ -195,7 +206,8 @@ sumBatscopeData <- function(
     gps_coords <- data.frame(
       project = unique(data_r$project),
       lat,
-      long)
+      long
+    )
     message("Manuelle Koordinaten verwendet.")
     print(gps_coords)
   }
@@ -203,7 +215,7 @@ sumBatscopeData <- function(
   data_binned <- merge(data_binned, gps_coords)
 
   # Sonnenauf und -untergang
-  if (shiny_progress){
+  if (shiny_progress) {
     incProgress(0.2, detail = "Berechne Sonnenauf und -untergangszeiten...")
   } else {
     cat("Berechne Sonnenauf und -untergangszeiten...\n")
@@ -212,11 +224,13 @@ sumBatscopeData <- function(
   gps_matrix <- matrix(c(data_binned$long, data_binned$lat), ncol = 2)
   data_binned$sunset <- sunriset(
     gps_matrix, as_datetime(data_binned$survey_date),
-    direction = "sunset", POSIXct.out = TRUE)[, 2]
+    direction = "sunset", POSIXct.out = TRUE
+  )[, 2]
 
   data_binned$sunrise <- sunriset(
     gps_matrix, as_datetime(data_binned$survey_date) + 24 * 60 * 60,
-    direction = "sunrise", POSIXct.out = TRUE)[, 2]
+    direction = "sunrise", POSIXct.out = TRUE
+  )[, 2]
 
   data_binned$project <- factor(data_binned$project)
   data_binned$species <- factor(data_binned$species)
@@ -226,7 +240,7 @@ sumBatscopeData <- function(
 }
 
 #' Read all BatScope Export Files in Folder
-#' 
+#'
 #' Wrapper for readBatscopeXLSX to read multiple \code{xlsx} files or all files
 #' within a folder
 #'
@@ -235,13 +249,10 @@ sumBatscopeData <- function(
 #' @param ... additional arguments passed to \code{\link{readBatscopeXLSX}}
 #' @family data functions
 #' @export
-readBatscopeXLSX_multiple <- function(
-  path = file.choose(),
-  read_folder = FALSE,
-  ...
-  ){
-
-  if (read_folder){
+readBatscopeXLSXmultiple <- function(path = file.choose(),
+                                     read_folder = FALSE,
+                                     ...) {
+  if (read_folder) {
     folder <- dirname(path)
     files <- list.files(folder, pattern = ".xlsx", full.names = TRUE)
   } else {
@@ -251,11 +262,14 @@ readBatscopeXLSX_multiple <- function(
   message("Reading following files")
   message(files)
   data <- list()
-  pb <- txtProgressBar(min = 0, max = 1, initial = 0, char = "=",
-             width = NA, style = 3)
-  for (i in seq_along(files)){
+  pb <- txtProgressBar(
+    min = 0, max = 1, initial = 0, char = "=",
+    width = NA, style = 3
+  )
+  for (i in seq_along(files)) {
     data[[i]] <- suppressMessages(
-      readBatscopeXLSX(files[i], shiny_progress_n = length(files), ...))
+      readBatscopeXLSX(files[i], shiny_progress_n = length(files), ...)
+    )
     setTxtProgressBar(pb, i / length(files))
   }
   close(pb)

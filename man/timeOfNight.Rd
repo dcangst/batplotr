@@ -10,8 +10,8 @@ timeOfNight(date)
 \item{date}{a POSIXct object, or a vector thereof}
 }
 \description{
-gives back a \code{POSIXct} object with date 1900-01-01 (evening) or 
-1900-01-02 (morning) but with same timestamp for plotting, 
+gives back a \code{POSIXct} object with date 1900-01-01 (evening) or
+1900-01-02 (morning) but with same timestamp for plotting,
 corrects for daylight saving time.
 }
 \seealso{

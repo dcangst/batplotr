@@ -6,7 +6,7 @@ Authors@R: person("Daniel", "Angst", , "dcangst@gmail.com",
 Description: read data from batLogger export and visualize it
 Depends:
     R (>= 3.6.2),
-    maptools,
+    suntools,
     plyr,
     ggplot2,
     stringr,

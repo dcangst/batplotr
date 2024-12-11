@@ -36,7 +36,7 @@ readBatscopeXLSX <- function(path = file.choose(),
 
   # MODIFY DATA for use in R
   if (batscope_version == "BatScope4") {
-    data_r <- data_frame(
+    data_r <- tibble(
       project = rawdata$Project,
       timestamp = ymd_hms(rawdata$Timestamp, tz = time_zone),
       survey_date =
@@ -53,7 +53,7 @@ readBatscopeXLSX <- function(path = file.choose(),
       n_calls = rawdata[[str_c(species_col_name, " Calls")]]
     )
   } else {
-    data_r <- data_frame(
+    data_r <- tibble(
       project = rawdata$ProjectName,
       timestamp = update(rawdata$recTime,
         year = year(rawdata$recDate),
@@ -222,12 +222,12 @@ sumBatscopeData <- function(data_r,
   }
 
   gps_matrix <- matrix(c(data_binned$long, data_binned$lat), ncol = 2)
-  data_binned$sunset <- sunriset(
+  data_binned$sunset <- suntools::sunriset(
     gps_matrix, as_datetime(data_binned$survey_date),
     direction = "sunset", POSIXct.out = TRUE
   )[, 2]
 
-  data_binned$sunrise <- sunriset(
+  data_binned$sunrise <- suntools::sunriset(
     gps_matrix, as_datetime(data_binned$survey_date) + 24 * 60 * 60,
     direction = "sunrise", POSIXct.out = TRUE
   )[, 2]

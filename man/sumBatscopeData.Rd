@@ -36,7 +36,7 @@ summarizes the Batscope Data by nights and bins
 }
 \seealso{
 Other data functions: 
-\code{\link{readBatscopeXLSXmultiple}()},
-\code{\link{readBatscopeXLSX}()}
+\code{\link{readBatscopeXLSX}()},
+\code{\link{readBatscopeXLSXmultiple}()}
 }
 \concept{data functions}

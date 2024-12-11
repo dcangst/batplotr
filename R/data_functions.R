@@ -190,7 +190,7 @@ sumBatscopeData <- function(data_r,
     cat("GPS Koordinaten bearbeiten...\n")
   }
 
-  if (is.null(lat) | is.null(long)) {
+  if (is.null(lat) || is.null(long)) {
     gps_coords <- ddply(data_r, .(project), summarize,
       lat = mean(latitude, na.rm = TRUE),
       long = mean(longitude, na.rm = TRUE)

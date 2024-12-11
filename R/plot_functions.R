@@ -137,7 +137,7 @@ periodPlot <- function(plotData,
     end_date <- as.POSIXct(end_date, format = "%Y-%m-%d", tz = time_zone)
   }
 
-  if (!is.null(y_limits) & is.POSIXct(y_limits)[1] == FALSE) {
+  if (!is.null(y_limits) && is.POSIXct(y_limits)[1] == FALSE) {
     y_limits <- as.POSIXct(y_limits, tz = time_zone)
   }
 
@@ -227,7 +227,7 @@ periodPlot <- function(plotData,
     labs(x = "Datum", y = str_c("Uhrzeit (", time_zone, ")"), title = plottitle, size = "# Events", color = "Spezies") +
     theme(text = element_text(size = text_size))
 
-  if (sel_species[1] != "every" & length(sel_species) == 1) {
+  if (sel_species[1] != "every" && length(sel_species) == 1) {
     periodPlot <- periodPlot +
       geom_point(aes(size = n_events), alpha = 0.5, color = "blue")
   } else {

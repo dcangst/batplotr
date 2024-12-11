@@ -32,7 +32,7 @@ timeOfNight <- function(date) {
 #' @family accessory functions
 #' @export
 listHead <- function(list, n = 6) {
-  for (i in 1:length(list)) {
+  for (i in seq_along(list)) {
     print(head(list[[i]], n))
   }
 }

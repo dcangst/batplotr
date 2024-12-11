@@ -538,7 +538,7 @@ shiny_batPlots <- function(lat_default = 47.4,
         plotData <- subset(data_r(), project %in% input$project)
 
         nightPlot(plotData,
-          day = with_tz(input$dates, tzone = input$time_zone),
+          day = input$dates[1],
           sel_species = input$species,
           x_limits = xlim,
           y_limits = ylim,

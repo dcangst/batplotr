@@ -1,3 +1,4 @@
+#' @keywords internal
 #' batplotr
 #' Simple BatScope Data visualization
 #'
@@ -20,5 +21,8 @@
 #'
 #'      \code{\link{listHead}}
 #' @name batplotr
-#' @docType package
+"_PACKAGE"
+
+## usethis namespace: start
+## usethis namespace: end
 NULL

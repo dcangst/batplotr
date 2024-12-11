@@ -188,11 +188,11 @@ periodPlot <- function(plotData,
   names(sun_data)[4] <- "survey_date"
 
   gps_matrix <- matrix(c(sun_data$long, sun_data$lat), ncol = 2)
-  sun_data$sunset <- sunriset(
+  sun_data$sunset <- suntools::sunriset(
     gps_matrix, sun_data$survey_date,
     direction = "sunset", POSIXct.out = TRUE
   )[, 2]
-  sun_data$sunrise <- sunriset(
+  sun_data$sunrise <- suntools::sunriset(
     gps_matrix, sun_data$survey_date + 24 * 60 * 60,
     direction = "sunrise", POSIXct.out = TRUE
   )[, 2]
